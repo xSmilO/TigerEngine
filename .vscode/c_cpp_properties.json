@@ -5,7 +5,9 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/vendor/glad/include",
-                "${workspaceFolder}/vendor/glfw/include"
+                "${workspaceFolder}/vendor/glfw/include",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/vendor"
             ],
             "defines": [
                 "_DEBUG",

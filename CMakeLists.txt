@@ -31,6 +31,17 @@ find_package(OpenGL REQUIRED)
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp
+    src/Core/Application.cpp
+    src/Graphics/Renderer2D.cpp
+    src/Graphics/Texture.cpp
+    src/Graphics/stb_image.cpp
+    src/Scene/GameObject.cpp
+    src/Scene/Scene.cpp
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    include
+    vendor
 )
 
 # Link everything together
