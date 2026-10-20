@@ -1,4 +1,5 @@
 #include "Core/Application.h"
+#include "Core/Input.h"
 #include "Graphics/Renderer2D.h"
 #include <iostream>
 
@@ -31,7 +32,9 @@ void Application::Init() {
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         return;
 
+    // Initialize systems
     Renderer2D::Init();
+    Input::Init(m_Window); // <-- Give the window to the Input system
 }
 
 void Application::Run() {

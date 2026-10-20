@@ -32,6 +32,7 @@ find_package(OpenGL REQUIRED)
 add_executable(${PROJECT_NAME} 
     src/main.cpp
     src/Core/Application.cpp
+    src/Core/Input.cpp
     src/Graphics/Renderer2D.cpp
     src/Graphics/Texture.cpp
     src/Graphics/stb_image.cpp
