@@ -5,6 +5,12 @@ namespace TigerEngine {
 class Texture;
 class Scene; // Forward declaration
 
+enum class ShapeType {
+    Quad,
+    Triangle,
+    Polygon
+};
+
 class GameObject {
   public:
     GameObject();
@@ -27,7 +33,9 @@ class GameObject {
     Vector2 Velocity;
     Texture *Sprite;
     Vector4 Color;
+    ShapeType Shape = ShapeType::Quad; // NEW
     bool HasCollision = true;
+    int PolygonSides = 6;
 
     // A pointer to the scene this object lives in
     Scene *CurrentScene;

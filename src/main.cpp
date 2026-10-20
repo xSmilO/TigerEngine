@@ -1,5 +1,6 @@
 #include "Core/Application.h"
 #include "Core/Input.h"
+#include "Graphics/Renderer2D.h"
 #include "Scene/GameObject.h"
 #include "Scene/Scene.h" // Needed so we can call methods on CurrentScene
 #include <iostream>
@@ -99,6 +100,33 @@ class Player : public TigerEngine::GameObject {
         }
 
         Position += Velocity * Speed * deltaTime;
+    }
+
+    void Draw() override {
+        // 1. Draw the Player's normal shape first
+        TigerEngine::GameObject::Draw();
+
+        // 2. Get the raw screen coordinates (-1.0 to 1.0)
+        float ndcX = TigerEngine::Input::GetMouseX_NDC();
+        float ndcY = TigerEngine::Input::GetMouseY_NDC();
+
+        // 3. Convert Screen Space to World Space
+        if(CurrentScene && CurrentScene->GetActiveCamera()) {
+            // Get the camera's matrix and flip it backwards
+            glm::mat4 viewProj = CurrentScene->GetActiveCamera()->GetViewProjectionMatrix();
+            glm::mat4 inverseViewProj = glm::inverse(viewProj);
+
+            glm::vec4 screenPos = glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
+            glm::vec4 worldPos = inverseViewProj * screenPos;
+
+            // Convert back to our standard Vector2
+            TigerEngine::Vector2 finalMouseWorldPos(worldPos.x, worldPos.y);
+
+            // 4. Draw the laser accurately!
+            TigerEngine::Renderer2D::DrawLine(Position, finalMouseWorldPos,
+                                              TigerEngine::Vector4(1.0f, 0.0f, 0.0f, 1.0f) // Red laser
+            );
+        }
     }
 };
 

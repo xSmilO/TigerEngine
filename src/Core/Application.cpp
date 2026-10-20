@@ -48,6 +48,17 @@ void Application::Init() {
         }
     });
 
+    glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow *window, int width, int height) {
+        // 1. Tell OpenGL to scale the drawing canvas to the new window size
+        glViewport(0, 0, width, height);
+
+        // 2. Tell our Scene to fix the camera's aspect ratio so shapes don't stretch
+        Application *app = (Application *)glfwGetWindowUserPointer(window);
+        if(app) {
+            app->GetScene().OnWindowResized(width, height);
+        }
+    });
+
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         return;
 
