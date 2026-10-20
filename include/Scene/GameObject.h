@@ -33,7 +33,8 @@ class GameObject {
     Vector2 Velocity;
     Texture *Sprite;
     Vector4 Color;
-    ShapeType Shape = ShapeType::Quad; // NEW
+    ShapeType Shape = ShapeType::Quad;
+    float Rotation;
     bool HasCollision = true;
     int PolygonSides = 6;
 

@@ -3,12 +3,18 @@
 
 namespace TigerEngine {
 GameObject::GameObject()
-    : Position(0.0f, 0.0f), Scale(0.5f, 0.5f), Velocity(0.0f, 0.0f), Color(1.0f, 1.0f, 1.0f, 1.0f), // Default to White
-      Sprite(nullptr), CurrentScene(nullptr) {
+    : Position(0.0f, 0.0f), Scale(0.5f, 0.5f), Velocity(0.0f, 0.0f), Rotation(0.0f), // Initialize to zero
+      Color(1.0f, 1.0f, 1.0f, 1.0f), Sprite(nullptr), CurrentScene(nullptr) {
 }
 
 void GameObject::Draw() {
-    Renderer2D::DrawQuad(Position, Scale, Sprite, Color);
+    if(Shape == ShapeType::Triangle) {
+        Renderer2D::DrawTriangle(Position, Scale, Color, Rotation);
+    } else if(Shape == ShapeType::Polygon) {
+        Renderer2D::DrawPolygon(Position, Scale, PolygonSides, Color, Rotation);
+    } else {
+        Renderer2D::DrawQuad(Position, Scale, Sprite, Color, Rotation);
+    }
 }
 
 bool GameObject::CheckCollision(const GameObject *other) const {

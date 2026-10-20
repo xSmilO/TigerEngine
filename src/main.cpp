@@ -47,6 +47,25 @@ class CameraController : public TigerEngine::GameObject {
     }
 };
 
+class SpinningTriangle : public TigerEngine::GameObject {
+  public:
+    void Start() override {
+        // 1. Tell the engine this object is a triangle
+        Shape = TigerEngine::ShapeType::Triangle;
+
+        // 2. Set its starting position and size
+        Position = TigerEngine::Vector2(0.0f, 0.0f);
+        Scale = TigerEngine::Vector2(0.5f, 0.5f);
+
+        // 3. Make it a cool Cyan color
+        Color = TigerEngine::Vector4(0.0f, 0.8f, 1.0f, 1.0f);
+    }
+
+    void Update(float deltaTime) override {
+        Rotation += 180.0f * deltaTime;
+    }
+};
+
 class Enemy : public TigerEngine::GameObject {
   public:
     void Start() override {
@@ -136,6 +155,7 @@ int main() {
     app.GetScene().AddObject(new Player());
     app.GetScene().AddObject(new Enemy());
     app.GetScene().AddObject(new CameraController());
+    app.GetScene().AddObject(new SpinningTriangle());
 
     app.Run();
     return 0;

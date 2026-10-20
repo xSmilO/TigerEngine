@@ -16,14 +16,12 @@ const char *vertexShaderSrc = R"(
     layout (location = 1) in vec2 aTexCoord;
     out vec2 TexCoord;
     
-    uniform mat4 u_ViewProjection; // NEW
-    uniform vec2 u_Position;
-    uniform vec2 u_Scale;
+    uniform mat4 u_ViewProjection;
+    uniform mat4 u_Transform; // NEW: Replaces u_Position and u_Scale
     
     void main() {
-        // Multiply the world position by the camera matrix
-        vec4 worldPos = vec4((aPos * u_Scale) + u_Position, 0.0, 1.0);
-        gl_Position = u_ViewProjection * worldPos;
+        // Multiply the base vertices by our single Transform matrix
+        gl_Position = u_ViewProjection * u_Transform * vec4(aPos, 0.0, 1.0);
         TexCoord = aTexCoord;
     })";
 
@@ -117,18 +115,24 @@ void Renderer2D::Shutdown() {
 }
 
 // Draw primitive with pure color
-void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Vector4 &color) {
-    DrawQuad(position, size, nullptr, color);
+void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Vector4 &color, float rotation) {
+    DrawQuad(position, size, nullptr, color, rotation);
 }
 
 // Draw texture with color tint
 void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Texture *texture,
-                          const Vector4 &tintColor) {
+                          const Vector4 &tintColor, float rotation) {
     glUseProgram(s_ShaderProgram);
 
-    // Send Vectors to the shader
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Position"), position.x, position.y);
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Scale"), size.x, size.y);
+    // NEW: Calculate Transform Matrix (Translation * Rotation * Scale)
+    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
+                          glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
+                          glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
+
+    // Send the matrix to the shader
+    int loc = glGetUniformLocation(s_ShaderProgram, "u_Transform");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(transform));
+
     glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), tintColor.r, tintColor.g, tintColor.b, tintColor.a);
 
     if(texture) {
@@ -143,19 +147,26 @@ void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Te
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Renderer2D::DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &color) {
+void Renderer2D::DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &tintColor, float rotation) {
     glUseProgram(s_ShaderProgram);
 
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Position"), position.x, position.y);
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Scale"), size.x, size.y);
-    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
+    // NEW: Calculate Transform Matrix (Translation * Rotation * Scale)
+    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
+                          glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
+                          glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
+
+    // Send the matrix to the shader
+    int loc = glGetUniformLocation(s_ShaderProgram, "u_Transform");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), tintColor.r, tintColor.g, tintColor.b, tintColor.a);
     glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0); // No texture
 
     glBindVertexArray(s_TriangleVAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int sides, const Vector4 &color) {
+void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int sides, const Vector4 &color,
+                             const float rotation) {
     if(sides < 3)
         sides = 3;
     if(sides > 98)
@@ -183,8 +194,13 @@ void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int s
 
     // Draw
     glUseProgram(s_ShaderProgram);
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Position"), position.x, position.y);
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Scale"), size.x, size.y);
+    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
+                          glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
+                          glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
+
+    // Send the matrix to the shader
+    int loc = glGetUniformLocation(s_ShaderProgram, "u_Transform");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(transform));
     glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
     glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
 
@@ -201,10 +217,10 @@ void Renderer2D::DrawLine(const Vector2 &p0, const Vector2 &p1, const Vector4 &c
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(lineVertices), lineVertices);
 
     glUseProgram(s_ShaderProgram);
+    glm::mat4 identity = glm::mat4(1.0f);
+    glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(identity));
 
-    // Because our vertices are already exact world coordinates, we tell the shader not to move or scale them!
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Position"), 0.0f, 0.0f);
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Scale"), 1.0f, 1.0f);
+    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
 
     glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
     glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
