@@ -5,8 +5,6 @@
 
 class Player : public TigerEngine::GameObject {
   public:
-    float Speed = 1.5f;
-
     void Start() override {
         X = 0.0f;
         Y = 0.0f;
@@ -15,18 +13,36 @@ class Player : public TigerEngine::GameObject {
     }
 
     void Update(float deltaTime) override {
-        // Continuous polling for movement
-        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::D)) {
-            X += Speed * deltaTime;
+        // We can still use polling for continuous things like movement
+        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::D))
+            X += 1.5f * deltaTime;
+        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::A))
+            X -= 1.5f * deltaTime;
+        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::R)) {
+            Width = 0.3f;
+            Height = 0.3f;
         }
-        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::A)) {
-            X -= Speed * deltaTime;
-        }
-        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::W)) {
-            Y += Speed * deltaTime;
-        }
-        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::S)) {
-            Y -= Speed * deltaTime;
+    }
+
+    void OnMousePressed(int button, float mouseX, float mouseY) override {
+        if(button == TigerEngine::Mouse::ButtonLeft) {
+            // Get the converted coordinates
+            float ndcX = TigerEngine::Input::GetMouseX_NDC();
+            float ndcY = TigerEngine::Input::GetMouseY_NDC();
+
+            // Calculate the boundaries of this GameObject
+            float left = X - (Width / 2.0f);
+            float right = X + (Width / 2.0f);
+            float bottom = Y - (Height / 2.0f);
+            float top = Y + (Height / 2.0f);
+
+            // Check if the mouse is inside the bounding box
+            if(ndcX >= left && ndcX <= right && ndcY >= bottom && ndcY <= top) {
+                std::cout << "Player Clicked! Direct hit at " << ndcX << ", " << ndcY << "\n";
+
+                Width += 0.1f;
+                Height += 0.1f;
+            }
         }
     }
 };

@@ -1,19 +1,23 @@
 #pragma once
 #include "Core/KeyCodes.h"
 
-// Forward declaration
 class GLFWwindow;
 
 namespace TigerEngine {
-    class Input {
-    public:
-        // Setup the internal window pointer
-        static void Init(GLFWwindow* window);
-        
-        // The function the user will actually call
-        static bool IsKeyPressed(KeyCode key);
+class Input {
+  public:
+    static void Init(GLFWwindow *window);
 
-    private:
-        static GLFWwindow* s_Window;
-    };
-}
+    static bool IsKeyPressed(KeyCode key);
+    static bool IsMouseButtonPressed(KeyCode button);
+
+    static float GetMouseX();
+    static float GetMouseY();
+
+    static float GetMouseX_NDC();
+    static float GetMouseY_NDC();
+
+  private:
+    static GLFWwindow *s_Window;
+};
+} // namespace TigerEngine

@@ -29,12 +29,30 @@ void Application::Init() {
     }
     glfwMakeContextCurrent(m_Window);
 
+    // Tell GLFW that the "User Pointer" for this window is our Application instance
+    // This allows us to access m_CurrentScene from inside a static C-style callback function
+    glfwSetWindowUserPointer(m_Window, this);
+
+    // Set the mouse button callback event
+    glfwSetMouseButtonCallback(m_Window, [](GLFWwindow *window, int button, int action, int mods) {
+        Application *app = (Application *)glfwGetWindowUserPointer(window);
+
+        // Get current mouse position for the event
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        if(action == GLFW_PRESS) {
+            app->GetScene().OnMousePressed(button, (float)xpos, (float)ypos);
+        } else if(action == GLFW_RELEASE) {
+            app->GetScene().OnMouseReleased(button, (float)xpos, (float)ypos);
+        }
+    });
+
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         return;
 
-    // Initialize systems
     Renderer2D::Init();
-    Input::Init(m_Window); // <-- Give the window to the Input system
+    Input::Init(m_Window);
 }
 
 void Application::Run() {

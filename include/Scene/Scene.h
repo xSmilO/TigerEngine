@@ -14,6 +14,9 @@ class Scene {
     void Update(float deltaTime);
     void Draw();
 
+    void OnMousePressed(int button, float mouseX, float mouseY);
+    void OnMouseReleased(int button, float mouseX, float mouseY);
+
   private:
     std::vector<GameObject *> m_Objects;
 };

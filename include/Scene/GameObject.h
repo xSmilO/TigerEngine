@@ -14,6 +14,12 @@ class GameObject {
     }
     virtual void Draw();
 
+    // Event Callbacks
+    virtual void OnMousePressed(int button, float mouseX, float mouseY) {
+    }
+    virtual void OnMouseReleased(int button, float mouseX, float mouseY) {
+    }
+
     float X, Y;
     float Width, Height;
     Texture *Sprite;

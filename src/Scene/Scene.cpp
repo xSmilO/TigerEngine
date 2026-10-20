@@ -28,4 +28,16 @@ void Scene::Draw() {
     for(GameObject *obj : m_Objects)
         obj->Draw();
 }
+
+void Scene::OnMousePressed(int button, float mouseX, float mouseY) {
+    for(GameObject *obj : m_Objects) {
+        obj->OnMousePressed(button, mouseX, mouseY);
+    }
+}
+
+void Scene::OnMouseReleased(int button, float mouseX, float mouseY) {
+    for(GameObject *obj : m_Objects) {
+        obj->OnMouseReleased(button, mouseX, mouseY);
+    }
+}
 } // namespace TigerEngine
