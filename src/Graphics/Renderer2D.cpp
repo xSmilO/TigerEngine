@@ -1,6 +1,7 @@
 #include "Graphics/Renderer2D.h"
 #include "Graphics/Texture.h"
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace TigerEngine {
 unsigned int Renderer2D::s_VAO = 0, Renderer2D::s_VBO = 0, Renderer2D::s_ShaderProgram = 0;
@@ -10,10 +11,15 @@ const char *vertexShaderSrc = R"(
     layout (location = 0) in vec2 aPos;
     layout (location = 1) in vec2 aTexCoord;
     out vec2 TexCoord;
+    
+    uniform mat4 u_ViewProjection; // NEW
     uniform vec2 u_Position;
     uniform vec2 u_Scale;
+    
     void main() {
-        gl_Position = vec4((aPos * u_Scale) + u_Position, 0.0, 1.0);
+        // Multiply the world position by the camera matrix
+        vec4 worldPos = vec4((aPos * u_Scale) + u_Position, 0.0, 1.0);
+        gl_Position = u_ViewProjection * worldPos;
         TexCoord = aTexCoord;
     })";
 
@@ -82,5 +88,20 @@ void Renderer2D::DrawQuad(float x, float y, float width, float height, const Tex
 
     glBindVertexArray(s_VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+#include <glm/gtc/type_ptr.hpp> // Add this include at the top
+
+// ... Init() and Shutdown() stay exactly the same ...
+
+void Renderer2D::BeginScene(const OrthographicCamera &camera) {
+    glUseProgram(s_ShaderProgram);
+    // Send the camera matrix to the GPU once per frame
+    int loc = glGetUniformLocation(s_ShaderProgram, "u_ViewProjection");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(camera.GetViewProjectionMatrix()));
+}
+
+void Renderer2D::EndScene() {
+    // Nothing needed here right now, but good for future batch rendering
 }
 } // namespace TigerEngine

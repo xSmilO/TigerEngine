@@ -1,4 +1,5 @@
 #pragma once
+#include "Graphics/OrthographicCamera.h"
 #include "Scene/GameObject.h"
 #include <vector>
 
@@ -17,7 +18,19 @@ class Scene {
     void OnMousePressed(int button, float mouseX, float mouseY);
     void OnMouseReleased(int button, float mouseX, float mouseY);
 
+    void SetActiveCamera(OrthographicCamera *camera) {
+        m_ActiveCamera = camera;
+    }
+    OrthographicCamera *GetActiveCamera() {
+        return m_ActiveCamera;
+    }
+
   private:
     std::vector<GameObject *> m_Objects;
+
+    OrthographicCamera m_DefaultCamera{-1.6f, 1.6f, -0.9f, 0.9f};
+
+    // The camera the engine will actually use to draw
+    OrthographicCamera *m_ActiveCamera;
 };
 } // namespace TigerEngine

@@ -5,53 +5,50 @@
 
 class Player : public TigerEngine::GameObject {
   public:
+    float Speed = 1.5f;
+
     void Start() override {
-        X = 0.0f;
-        Y = 0.0f;
-        Width = 0.3f;
-        Height = 0.3f;
+        // Look how much cleaner this is!
+        Position = TigerEngine::Vector2(0.0f, 0.0f);
+        Scale = TigerEngine::Vector2(0.3f, 0.3f);
     }
 
     void Update(float deltaTime) override {
-        // We can still use polling for continuous things like movement
+        // 1. Reset velocity every frame
+        Velocity = TigerEngine::Vector2(0.0f, 0.0f);
+
+        // 2. Add directions based on input
         if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::D))
-            X += 1.5f * deltaTime;
+            Velocity.x += 1.0f;
         if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::A))
-            X -= 1.5f * deltaTime;
-        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::R)) {
-            Width = 0.3f;
-            Height = 0.3f;
+            Velocity.x -= 1.0f;
+        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::W))
+            Velocity.y += 1.0f;
+        if(TigerEngine::Input::IsKeyPressed(TigerEngine::Key::S))
+            Velocity.y -= 1.0f;
+
+        // 3. Normalize vector so diagonal movement isn't faster!
+        if(glm::length(Velocity) > 0.0f) {
+            Velocity = glm::normalize(Velocity);
         }
-    }
 
-    void OnMousePressed(int button, float mouseX, float mouseY) override {
-        if(button == TigerEngine::Mouse::ButtonLeft) {
-            // Get the converted coordinates
-            float ndcX = TigerEngine::Input::GetMouseX_NDC();
-            float ndcY = TigerEngine::Input::GetMouseY_NDC();
-
-            // Calculate the boundaries of this GameObject
-            float left = X - (Width / 2.0f);
-            float right = X + (Width / 2.0f);
-            float bottom = Y - (Height / 2.0f);
-            float top = Y + (Height / 2.0f);
-
-            // Check if the mouse is inside the bounding box
-            if(ndcX >= left && ndcX <= right && ndcY >= bottom && ndcY <= top) {
-                std::cout << "Player Clicked! Direct hit at " << ndcX << ", " << ndcY << "\n";
-
-                Width += 0.1f;
-                Height += 0.1f;
-            }
-        }
+        // 4. Apply vector math to move the object
+        Position += Velocity * Speed * deltaTime;
     }
 };
 
 int main() {
     TigerEngine::Application app(1280, 720, "TigerEngine");
 
-    app.GetScene().AddObject(new Player());
+    // User decides they want a super zoomed-out camera (-10 to 10)
+    TigerEngine::OrthographicCamera myCustomCamera(-10.0f, 10.0f, -5.625f, 5.625f);
 
+    // User plugs it into the engine
+    app.GetScene().SetActiveCamera(&myCustomCamera);
+
+    // Add objects and run normally...
+    app.GetScene().AddObject(new Player());
     app.Run();
+
     return 0;
 }

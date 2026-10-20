@@ -1,7 +1,9 @@
 #include "Scene/Scene.h"
+#include "Graphics/Renderer2D.h"
 
 namespace TigerEngine {
 Scene::Scene() {
+    m_ActiveCamera = &m_DefaultCamera;
 }
 
 Scene::~Scene() {
@@ -25,8 +27,13 @@ void Scene::Update(float deltaTime) {
 }
 
 void Scene::Draw() {
-    for(GameObject *obj : m_Objects)
+    Renderer2D::BeginScene(*m_ActiveCamera);
+
+    for(GameObject *obj : m_Objects) {
         obj->Draw();
+    }
+
+    Renderer2D::EndScene();
 }
 
 void Scene::OnMousePressed(int button, float mouseX, float mouseY) {

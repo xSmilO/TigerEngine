@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME}
     src/Graphics/Renderer2D.cpp
     src/Graphics/Texture.cpp
     src/Graphics/stb_image.cpp
+    src/Graphics/OrthographicCamera.cpp
     src/Scene/GameObject.cpp
     src/Scene/Scene.cpp
 )

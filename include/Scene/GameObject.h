@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/Math.h"
 
 namespace TigerEngine {
 class Texture;
@@ -13,15 +14,16 @@ class GameObject {
     virtual void Update(float deltaTime) {
     }
     virtual void Draw();
-
-    // Event Callbacks
     virtual void OnMousePressed(int button, float mouseX, float mouseY) {
     }
     virtual void OnMouseReleased(int button, float mouseX, float mouseY) {
     }
 
-    float X, Y;
-    float Width, Height;
+    // Replaced raw floats with Vectors
+    Vector2 Position;
+    Vector2 Scale;
+    Vector2 Velocity; // Great for physics/movement
+
     Texture *Sprite;
 };
 } // namespace TigerEngine
