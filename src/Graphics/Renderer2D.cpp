@@ -71,12 +71,20 @@ void Renderer2D::Shutdown() {
     glDeleteProgram(s_ShaderProgram);
 }
 
-void Renderer2D::DrawQuad(float x, float y, float width, float height, const Texture *texture, float r, float g,
-                          float b, float a) {
+// Draw primitive with pure color
+void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Vector4 &color) {
+    DrawQuad(position, size, nullptr, color);
+}
+
+// Draw texture with color tint
+void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Texture *texture,
+                          const Vector4 &tintColor) {
     glUseProgram(s_ShaderProgram);
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Position"), x, y);
-    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Scale"), width, height);
-    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), r, g, b, a);
+
+    // Send Vectors to the shader
+    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Position"), position.x, position.y);
+    glUniform2f(glGetUniformLocation(s_ShaderProgram, "u_Scale"), size.x, size.y);
+    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), tintColor.r, tintColor.g, tintColor.b, tintColor.a);
 
     if(texture) {
         texture->Bind(0);

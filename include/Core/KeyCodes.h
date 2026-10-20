@@ -11,6 +11,11 @@ constexpr KeyCode S = 83;
 constexpr KeyCode D = 68;
 constexpr KeyCode Escape = 256;
 constexpr KeyCode R = 82;
+
+constexpr KeyCode Right = 262;
+constexpr KeyCode Left = 263;
+constexpr KeyCode Down = 264;
+constexpr KeyCode Up = 265;
 } // namespace Key
 
 namespace Mouse {

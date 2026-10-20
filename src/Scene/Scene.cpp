@@ -13,6 +13,7 @@ Scene::~Scene() {
 }
 
 void Scene::AddObject(GameObject *object) {
+    object->CurrentScene = this;
     m_Objects.push_back(object);
 }
 

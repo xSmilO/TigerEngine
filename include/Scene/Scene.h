@@ -25,6 +25,10 @@ class Scene {
         return m_ActiveCamera;
     }
 
+    const std::vector<GameObject *> &GetObjects() const {
+        return m_Objects;
+    }
+
   private:
     std::vector<GameObject *> m_Objects;
 

@@ -3,6 +3,7 @@
 
 namespace TigerEngine {
 class Texture;
+class Scene; // Forward declaration
 
 class GameObject {
   public:
@@ -19,11 +20,16 @@ class GameObject {
     virtual void OnMouseReleased(int button, float mouseX, float mouseY) {
     }
 
-    // Replaced raw floats with Vectors
+    bool CheckCollision(const GameObject *other) const;
+
     Vector2 Position;
     Vector2 Scale;
-    Vector2 Velocity; // Great for physics/movement
-
+    Vector2 Velocity;
     Texture *Sprite;
+    Vector4 Color;
+    bool HasCollision = true;
+
+    // A pointer to the scene this object lives in
+    Scene *CurrentScene;
 };
 } // namespace TigerEngine

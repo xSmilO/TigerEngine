@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/Math.h"
 #include "Graphics/OrthographicCamera.h"
 #include <glm/glm.hpp>
 
@@ -10,12 +11,15 @@ class Renderer2D {
     static void Init();
     static void Shutdown();
 
-    // Setup the camera for the current frame
     static void BeginScene(const OrthographicCamera &camera);
     static void EndScene();
 
-    static void DrawQuad(float x, float y, float width, float height, const Texture *texture, float r = 1.0f,
-                         float g = 1.0f, float b = 1.0f, float a = 1.0f);
+    // Draw a solid colored primitive (No Texture)
+    static void DrawQuad(const Vector2 &position, const Vector2 &size, const Vector4 &color);
+
+    // Draw a textured quad with an optional color tint (Defaults to white/no tint)
+    static void DrawQuad(const Vector2 &position, const Vector2 &size, const Texture *texture,
+                         const Vector4 &tintColor = Vector4(1.0f));
 
   private:
     static unsigned int s_VAO, s_VBO, s_ShaderProgram;
