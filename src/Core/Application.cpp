@@ -68,25 +68,43 @@ void Application::Init() {
 
 void Application::Run() {
     float lastFrameTime = 0.0f;
-    m_CurrentScene.Start();
 
-    while(!glfwWindowShouldClose(m_Window) && m_IsRunning) {
-        float currentFrameTime = glfwGetTime();
-        float deltaTime = currentFrameTime - lastFrameTime;
-        lastFrameTime = currentFrameTime;
+    try {
+        std::cout << "0. Starting Scene" << std::endl;
+        m_CurrentScene.Start();
 
-        if(glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            m_IsRunning = false;
+        std::cout << "Starting Engine Loop..." << std::endl;
 
-        m_CurrentScene.Update(deltaTime);
+        while(!glfwWindowShouldClose(m_Window) && m_IsRunning) {
+            std::cout << "1. Beginning of Frame" << std::endl;
 
-        glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+            float currentFrameTime = glfwGetTime();
+            float deltaTime = currentFrameTime - lastFrameTime;
+            lastFrameTime = currentFrameTime;
 
-        m_CurrentScene.Draw();
+            if(glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+                m_IsRunning = false;
 
-        glfwSwapBuffers(m_Window);
-        glfwPollEvents();
+            std::cout << "2. Updating Scene" << std::endl;
+            m_CurrentScene.Update(deltaTime);
+
+            std::cout << "3. Clearing Screen" << std::endl;
+            glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            std::cout << "4. Drawing Scene" << std::endl;
+            m_CurrentScene.Draw();
+
+            std::cout << "5. Swapping Buffers" << std::endl;
+            glfwSwapBuffers(m_Window);
+
+            std::cout << "6. Polling Events" << std::endl;
+            glfwPollEvents();
+        }
+    } catch(const std::exception &e) {
+        std::cout << "\nFATAL ENGINE CRASH: " << e.what() << "\n" << std::endl;
+    } catch(...) {
+        std::cout << "\nUNKNOWN FATAL CRASH OCCURRED!\n" << std::endl;
     }
 }
 } // namespace TigerEngine

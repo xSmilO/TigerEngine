@@ -1,44 +1,54 @@
 #pragma once
 #include "Core/Math.h"
+#include "Graphics/Texture.h"
+#include "Scene/Component.h"
+#include <memory>
+#include <vector>
 
 namespace TigerEngine {
-class Texture;
-class Scene; // Forward declaration
-
-enum class ShapeType {
-    Quad,
-    Triangle,
-    Polygon
-};
+class Scene;
 
 class GameObject {
   public:
     GameObject();
-    virtual ~GameObject() = default;
+    virtual ~GameObject();
 
-    virtual void Start() {
-    }
-    virtual void Update(float deltaTime) {
-    }
+    virtual void Start();
+    virtual void Update(float deltaTime);
     virtual void Draw();
-    virtual void OnMousePressed(int button, float mouseX, float mouseY) {
-    }
-    virtual void OnMouseReleased(int button, float mouseX, float mouseY) {
+
+    // --- COMPONENT SYSTEM ---
+    template <typename T, typename... Args> T *AddComponent(Args &&...args) {
+        T *component = new T(std::forward<Args>(args)...);
+        component->Owner = this;
+        m_Components.push_back(component);
+        component->Start();
+        return component;
     }
 
-    bool CheckCollision(const GameObject *other) const;
+    template <typename T> T *GetComponent() {
+        for(Component *comp : m_Components) {
+            // Check if the component matches the requested type
+            if(T *typedComp = dynamic_cast<T *>(comp)) {
+                return typedComp;
+            }
+        }
+        return nullptr;
+    }
 
     Vector2 Position;
     Vector2 Scale;
-    Vector2 Velocity;
-    Texture *Sprite;
-    Vector4 Color;
-    ShapeType Shape = ShapeType::Quad;
     float Rotation;
-    bool HasCollision = true;
-    int PolygonSides = 6;
 
-    // A pointer to the scene this object lives in
     Scene *CurrentScene;
+
+    GameObject *Parent = nullptr;
+    std::vector<GameObject *> Children;
+
+    void AddChild(GameObject *child);
+    glm::mat4 GetWorldTransform() const;
+
+  private:
+    std::vector<Component *> m_Components;
 };
 } // namespace TigerEngine

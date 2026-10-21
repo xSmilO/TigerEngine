@@ -4,135 +4,117 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace TigerEngine {
+
 unsigned int Renderer2D::s_VAO = 0, Renderer2D::s_VBO = 0, Renderer2D::s_ShaderProgram = 0;
 
 unsigned int Renderer2D::s_TriangleVAO = 0, Renderer2D::s_TriangleVBO = 0;
 unsigned int Renderer2D::s_PolygonVAO = 0, Renderer2D::s_PolygonVBO = 0;
 unsigned int Renderer2D::s_LineVAO = 0, Renderer2D::s_LineVBO = 0;
+unsigned int Renderer2D::s_EBO = 0;
 
-const char *vertexShaderSrc = R"(
-    #version 330 core
-    layout (location = 0) in vec2 aPos;
-    layout (location = 1) in vec2 aTexCoord;
-    out vec2 TexCoord;
-    
-    uniform mat4 u_ViewProjection;
-    uniform mat4 u_Transform; // NEW: Replaces u_Position and u_Scale
-    
-    void main() {
-        // Multiply the base vertices by our single Transform matrix
-        gl_Position = u_ViewProjection * u_Transform * vec4(aPos, 0.0, 1.0);
-        TexCoord = aTexCoord;
-    })";
+const char *vertexShaderSrc = R"(#version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aTexCoord;
 
-const char *fragmentShaderSrc = R"(
-    #version 330 core
-    out vec4 FragColor;
-    in vec2 TexCoord;
-    uniform sampler2D u_Texture;
-    uniform vec4 u_Color;
-    uniform int u_HasTexture;
-    void main() {
-        if(u_HasTexture == 1) FragColor = texture(u_Texture, TexCoord) * u_Color;
-        else FragColor = u_Color;
-    })";
+out vec2 TexCoord;
+
+uniform mat4 u_Transform; 
+
+void main() {
+    gl_Position = u_Transform * vec4(aPos, 0.0, 1.0);
+    TexCoord = aTexCoord;
+})";
+
+const char *fragmentShaderSrc = R"(#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoord;
+
+uniform vec4 u_Color;
+uniform sampler2D u_Texture;
+uniform int u_HasTexture; 
+
+void main() {
+    if (u_HasTexture == 1) {
+        FragColor = texture(u_Texture, TexCoord) * u_Color;
+    } else {
+        FragColor = u_Color;
+    }
+})";
 
 void Renderer2D::Init() {
-    unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vertexShaderSrc, nullptr);
-    glCompileShader(vs);
-    unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fragmentShaderSrc, nullptr);
-    glCompileShader(fs);
-
-    s_ShaderProgram = glCreateProgram();
-    glAttachShader(s_ShaderProgram, vs);
-    glAttachShader(s_ShaderProgram, fs);
-    glLinkProgram(s_ShaderProgram);
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    float quadVertices[] = {-0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, 1.0f, 0.0f, 0.5f,  0.5f,  1.0f, 1.0f,
-                            0.5f,  0.5f,  1.0f, 1.0f, -0.5f, 0.5f,  0.0f, 1.0f, -0.5f, -0.5f, 0.0f, 0.0f};
-
+    // 1. Setup Quad VAO/VBO/EBO
     glGenVertexArrays(1, &s_VAO);
-    glGenBuffers(1, &s_VBO);
     glBindVertexArray(s_VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    float triangleVertices[] = {
-        // X, Y,       U, V
-        0.0f,  0.5f,  0.5f, 1.0f, // Top center
-        -0.5f, -0.5f, 0.0f, 0.0f, // Bottom left
-        0.5f,  -0.5f, 1.0f, 0.0f  // Bottom right
+    float vertices[] = {
+        // Positions   // TexCoords
+        -0.5f, -0.5f, 0.0f, 0.0f, // Bottom Left
+        0.5f,  -0.5f, 1.0f, 0.0f, // Bottom Right
+        0.5f,  0.5f,  1.0f, 1.0f, // Top Right
+        -0.5f, 0.5f,  0.0f, 1.0f  // Top Left
     };
 
-    glGenVertexArrays(1, &s_TriangleVAO);
-    glGenBuffers(1, &s_TriangleVBO);
-    glBindVertexArray(s_TriangleVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_TriangleVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+    glGenBuffers(1, &s_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, s_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    unsigned int indices[] = {0, 1, 2, 2, 3, 0};
+    glGenBuffers(1, &s_EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
+
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    // --- 2. SETUP DYNAMIC POLYGON ---
-    glGenVertexArrays(1, &s_PolygonVAO);
-    glGenBuffers(1, &s_PolygonVBO);
-    glBindVertexArray(s_PolygonVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_PolygonVBO);
-    // We don't fill this with data yet, we just allocate enough empty memory (GL_DYNAMIC_DRAW)
-    // 4 floats per vertex, max 100 vertices = 400 floats
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 400, nullptr, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    glBindVertexArray(0);
 
-    glGenVertexArrays(1, &s_LineVAO);
-    glGenBuffers(1, &s_LineVBO);
-    glBindVertexArray(s_LineVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_LineVBO);
-    // Allocate space for 2 vertices (X, Y, U, V) = 8 floats total. GL_DYNAMIC_DRAW because lines change every frame.
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, nullptr, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    // 2. Compile and Link Shaders
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
+    glCompileShader(vertexShader);
+
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSrc, NULL);
+    glCompileShader(fragmentShader);
+
+    s_ShaderProgram = glCreateProgram();
+    glAttachShader(s_ShaderProgram, vertexShader);
+    glAttachShader(s_ShaderProgram, fragmentShader);
+    glLinkProgram(s_ShaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    // NOTE: You will eventually want to initialize s_TriangleVAO, s_PolygonVAO,
+    // and s_LineVAO here as well so those drawing functions don't crash!
 }
 
 void Renderer2D::Shutdown() {
     glDeleteVertexArrays(1, &s_VAO);
     glDeleteBuffers(1, &s_VBO);
+    glDeleteBuffers(1, &s_EBO);
     glDeleteProgram(s_ShaderProgram);
 }
 
-// Draw primitive with pure color
-void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Vector4 &color, float rotation) {
-    DrawQuad(position, size, nullptr, color, rotation);
-}
-
-// Draw texture with color tint
-void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Texture *texture,
-                          const Vector4 &tintColor, float rotation) {
+void Renderer2D::DrawQuad(const glm::mat4 &transform, const Vector4 &color) {
     glUseProgram(s_ShaderProgram);
 
-    // NEW: Calculate Transform Matrix (Translation * Rotation * Scale)
-    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
-                          glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
-                          glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
+    glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(transform));
+    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
+    glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
 
-    // Send the matrix to the shader
-    int loc = glGetUniformLocation(s_ShaderProgram, "u_Transform");
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(transform));
+    glBindVertexArray(s_VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
 
+void Renderer2D::DrawQuad(const glm::mat4 &transform, const Texture *texture, const Vector4 &tintColor) {
+    glUseProgram(s_ShaderProgram);
+
+    glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(transform));
     glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), tintColor.r, tintColor.g, tintColor.b, tintColor.a);
 
     if(texture) {
@@ -144,22 +126,19 @@ void Renderer2D::DrawQuad(const Vector2 &position, const Vector2 &size, const Te
     }
 
     glBindVertexArray(s_VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void Renderer2D::DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &tintColor, float rotation) {
     glUseProgram(s_ShaderProgram);
 
-    // NEW: Calculate Transform Matrix (Translation * Rotation * Scale)
     glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
                           glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
                           glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
 
-    // Send the matrix to the shader
-    int loc = glGetUniformLocation(s_ShaderProgram, "u_Transform");
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(transform));
     glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), tintColor.r, tintColor.g, tintColor.b, tintColor.a);
-    glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0); // No texture
+    glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
 
     glBindVertexArray(s_TriangleVAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -170,10 +149,9 @@ void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int s
     if(sides < 3)
         sides = 3;
     if(sides > 98)
-        sides = 98; // Prevent overflowing our buffer
+        sides = 98;
 
     std::vector<float> vertices;
-    // Central vertex for the triangle fan
     vertices.push_back(0.0f);
     vertices.push_back(0.0f); // X, Y
     vertices.push_back(0.5f);
@@ -188,19 +166,15 @@ void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int s
         vertices.push_back(sin(angle) * 0.5f + 0.5f); // V
     }
 
-    // Upload the new vertices to the GPU
     glBindBuffer(GL_ARRAY_BUFFER, s_PolygonVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
 
-    // Draw
     glUseProgram(s_ShaderProgram);
     glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
                           glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
                           glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
 
-    // Send the matrix to the shader
-    int loc = glGetUniformLocation(s_ShaderProgram, "u_Transform");
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(transform));
     glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
     glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
 
@@ -209,36 +183,29 @@ void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int s
 }
 
 void Renderer2D::DrawLine(const Vector2 &p0, const Vector2 &p1, const Vector4 &color) {
-    // Construct the array of 2 vertices. (U, V coords don't matter for pure colored lines)
     float lineVertices[8] = {p0.x, p0.y, 0.0f, 0.0f, p1.x, p1.y, 1.0f, 1.0f};
 
-    // Upload the new points to the GPU
     glBindBuffer(GL_ARRAY_BUFFER, s_LineVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(lineVertices), lineVertices);
 
     glUseProgram(s_ShaderProgram);
     glm::mat4 identity = glm::mat4(1.0f);
     glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(identity));
-
-    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
-
     glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
     glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
 
     glBindVertexArray(s_LineVAO);
-
-    // Draw the line!
     glDrawArrays(GL_LINES, 0, 2);
 }
 
 void Renderer2D::BeginScene(const OrthographicCamera &camera) {
     glUseProgram(s_ShaderProgram);
-    // Send the camera matrix to the GPU once per frame
     int loc = glGetUniformLocation(s_ShaderProgram, "u_ViewProjection");
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(camera.GetViewProjectionMatrix()));
 }
 
 void Renderer2D::EndScene() {
-    // Nothing needed here right now, but good for future batch rendering
+    // Ready for batch rendering later
 }
+
 } // namespace TigerEngine

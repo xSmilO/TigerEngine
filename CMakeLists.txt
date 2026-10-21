@@ -39,6 +39,8 @@ add_executable(${PROJECT_NAME}
     src/Graphics/OrthographicCamera.cpp
     src/Scene/GameObject.cpp
     src/Scene/Scene.cpp
+    src/Scene/RigidBody2D.cpp
+    src/Scene/SpriteRenderer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

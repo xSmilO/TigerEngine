@@ -15,10 +15,10 @@ class Renderer2D {
     static void EndScene();
 
     // Update these signatures:
-    static void DrawQuad(const Vector2 &position, const Vector2 &size, const Vector4 &color, float rotation = 0.0f);
+    static void DrawQuad(const glm::mat4 &transform, const Vector4 &color);
 
-    static void DrawQuad(const Vector2 &position, const Vector2 &size, const Texture *texture,
-                         const Vector4 &tintColor = Vector4(1.0f), float rotation = 0.0f);
+    // ADD THIS: Draws a textured quad using a matrix
+    static void DrawQuad(const glm::mat4 &transform, const Texture *texture, const Vector4 &tintColor);
 
     static void DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &color, float rotation = 0.0f);
 
@@ -32,6 +32,7 @@ class Renderer2D {
     static unsigned int s_VAO, s_VBO, s_ShaderProgram;
     static unsigned int s_TriangleVAO, s_TriangleVBO;
     static unsigned int s_PolygonVAO, s_PolygonVBO;
+    static unsigned int s_EBO; // <-- Add this line!
 
     // NEW: Buffers for the Line Renderer
     static unsigned int s_LineVAO, s_LineVBO;
