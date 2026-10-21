@@ -37,6 +37,7 @@ add_executable(${PROJECT_NAME}
     src/Graphics/Texture.cpp
     src/Graphics/stb_image.cpp
     src/Graphics/OrthographicCamera.cpp
+    src/Graphics/Shader.cpp
     src/Scene/GameObject.cpp
     src/Scene/Scene.cpp
     src/Scene/RigidBody2D.cpp
@@ -55,4 +56,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glad
     glm::glm
     OpenGL::GL
+)
+
+# Copy the assets directory to the output directory after building
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/assets"
+    "$<TARGET_FILE_DIR:TigerEngine>/assets"
 )

@@ -7,17 +7,16 @@ bool RigidBody2D::CheckCollision(const GameObject *other) const {
     if(!other || !HasCollision)
         return false;
 
-    // Check if the other object even has a physics body!
-    // We use const_cast because GetComponent doesn't natively support const pointers yet
     RigidBody2D *otherRb = const_cast<GameObject *>(other)->GetComponent<RigidBody2D>();
     if(!otherRb || !otherRb->HasCollision)
         return false;
 
-    bool collisionX = Owner->Position.x + (Owner->Scale.x / 2.0f) >= other->Position.x - (other->Scale.x / 2.0f) &&
-                      other->Position.x + (other->Scale.x / 2.0f) >= Owner->Position.x - (Owner->Scale.x / 2.0f);
+    // CHANGED: Removed the '=' so perfectly touching edges don't trigger collisions
+    bool collisionX = Owner->Position.x + (Owner->Scale.x / 2.0f) > other->Position.x - (other->Scale.x / 2.0f) &&
+                      other->Position.x + (other->Scale.x / 2.0f) > Owner->Position.x - (Owner->Scale.x / 2.0f);
 
-    bool collisionY = Owner->Position.y + (Owner->Scale.y / 2.0f) >= other->Position.y - (other->Scale.y / 2.0f) &&
-                      other->Position.y + (other->Scale.y / 2.0f) >= Owner->Position.y - (Owner->Scale.y / 2.0f);
+    bool collisionY = Owner->Position.y + (Owner->Scale.y / 2.0f) > other->Position.y - (other->Scale.y / 2.0f) &&
+                      other->Position.y + (other->Scale.y / 2.0f) > Owner->Position.y - (Owner->Scale.y / 2.0f);
 
     return collisionX && collisionY;
 }

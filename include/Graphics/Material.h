@@ -2,20 +2,21 @@
 #include "Core/Math.h"
 
 namespace TigerEngine {
-class Texture; // Forward declaration
+
+class Texture; // Forward declaration so we don't need to include Texture.h here
 
 class Material {
   public:
     Vector4 TintColor;
     Texture *MainTexture;
 
-    // Constructor for a pure color material
-    Material(const Vector4 &color) : TintColor(color), MainTexture(nullptr) {
+    // Constructor with default arguments so you can create a material with just a color,
+    // just a texture, or both.
+    Material(const Vector4 &color = Vector4(1.0f, 1.0f, 1.0f, 1.0f), Texture *texture = nullptr)
+        : TintColor(color), MainTexture(texture) {
     }
 
-    // Constructor for a textured material
-    Material(Texture *texture, const Vector4 &tintColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f))
-        : TintColor(tintColor), MainTexture(texture) {
-    }
+    ~Material() = default;
 };
+
 } // namespace TigerEngine

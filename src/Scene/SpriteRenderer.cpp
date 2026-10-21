@@ -6,14 +6,11 @@
 
 namespace TigerEngine {
 void SpriteRenderer::Draw() {
-    std::cout << "  -> SpriteRenderer: Checking pointers" << std::endl;
     if(!Owner || !SharedMaterial)
         return;
 
-    std::cout << "  -> SpriteRenderer: Calculating Matrix" << std::endl;
     glm::mat4 worldMatrix = Owner->GetWorldTransform();
 
-    std::cout << "  -> SpriteRenderer: Sending to OpenGL" << std::endl;
     if(Shape == ShapeType::Quad) {
         if(SharedMaterial->MainTexture) {
             Renderer2D::DrawQuad(worldMatrix, SharedMaterial->MainTexture, SharedMaterial->TintColor);

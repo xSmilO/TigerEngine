@@ -16,7 +16,13 @@ class Application {
         return m_CurrentScene;
     }
 
+    static Application &Get() {
+        return *s_Instance;
+    }
+
   private:
+    static Application *s_Instance;
+
     void Init();
 
     GLFWwindow *m_Window;

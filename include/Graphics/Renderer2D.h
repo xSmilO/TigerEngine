@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Math.h"
 #include "Graphics/OrthographicCamera.h"
+#include "Graphics/Shader.h"
 #include <glm/glm.hpp>
 
 namespace TigerEngine {
@@ -29,6 +30,8 @@ class Renderer2D {
     static void DrawLine(const Vector2 &p0, const Vector2 &p1, const Vector4 &color);
 
   private:
+    static Shader *s_Shader;
+
     static unsigned int s_VAO, s_VBO, s_ShaderProgram;
     static unsigned int s_TriangleVAO, s_TriangleVBO;
     static unsigned int s_PolygonVAO, s_PolygonVBO;
