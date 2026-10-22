@@ -1,4 +1,5 @@
 #include "Core/Application.h"
+#include "Core/AudioSystem.h"
 #include "Core/Input.h"
 #include "Graphics/Renderer2D.h"
 #include <iostream>
@@ -14,6 +15,7 @@ Application::Application(int width, int height, const std::string &title)
 
 Application::~Application() {
     Renderer2D::Shutdown();
+    AudioSystem::Shutdown();
     glfwTerminate();
 }
 
@@ -66,6 +68,7 @@ void Application::Init() {
         return;
 
     Renderer2D::Init();
+    AudioSystem::Init();
     Input::Init(m_Window);
 }
 

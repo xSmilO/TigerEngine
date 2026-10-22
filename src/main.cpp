@@ -1,4 +1,5 @@
 #include "Core/Application.h"
+#include "Core/AudioSystem.h"
 #include "Core/Input.h"
 #include "Graphics/Material.h"
 #include "Graphics/OrthographicCamera.h"
@@ -37,6 +38,11 @@ class PlayerController : public TigerEngine::Component {
             // Jump!
             if(TigerEngine::Input::IsKeyPressed(GLFW_KEY_W)) {
                 Velocity.y = JumpForce;
+                TigerEngine::AudioSystem::PlaySound2D("assets/bomb.wav");
+                double random = ((double)rand() / (RAND_MAX));
+
+                std::cout << "new volue " << random << "\n";
+                TigerEngine::AudioSystem::SetMusicVolume(random);
             }
         } else {
             // Apply gravity while in the air
@@ -53,6 +59,9 @@ int main() {
 
     // 1. CREATE MATERIALS (Do this once)
     TigerEngine::Texture *playerTex = new TigerEngine::Texture("assets/czadomen.jpg");
+
+    TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
+    TigerEngine::AudioSystem::SetMusicVolume(0.1);
 
     TigerEngine::Material *matPlayer =
         new TigerEngine::Material(TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), playerTex); // Cyan
