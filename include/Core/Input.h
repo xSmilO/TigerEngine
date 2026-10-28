@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/KeyCodes.h"
 
-class GLFWwindow;
+struct GLFWwindow;
 
 namespace TigerEngine {
 class Input {

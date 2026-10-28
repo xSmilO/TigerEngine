@@ -25,12 +25,8 @@ add_subdirectory(vendor/glm EXCLUDE_FROM_ALL)
 # Find System OpenGL
 find_package(OpenGL REQUIRED)
 
-# ---------------------------------------------------------
-# Engine Executable
-# ---------------------------------------------------------
 
-add_executable(${PROJECT_NAME} 
-    src/main.cpp
+add_library(${PROJECT_NAME} STATIC
     src/Core/Application.cpp
     src/Core/Input.cpp
     src/Core/AudioSystem.cpp
@@ -45,23 +41,28 @@ add_executable(${PROJECT_NAME}
     src/Scene/SpriteRenderer.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PUBLIC    
     include
     vendor
 )
 
-# Link everything together
-# Notice we link 'glad' instead of adding glad.c to our executable
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME} PUBLIC
     glfw
     glad
     glm::glm
     OpenGL::GL
 )
 
-# Copy the assets directory to the output directory after building
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+add_executable(SnakeGame 
+    src/main.cpp
+    src/Snake.cpp
+    include/Game/Snake.h
+)
+
+target_link_libraries(SnakeGame PRIVATE ${PROJECT_NAME})
+
+add_custom_command(TARGET SnakeGame POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_SOURCE_DIR}/assets"
-    "$<TARGET_FILE_DIR:TigerEngine>/assets"
+    "$<TARGET_FILE_DIR:SnakeGame>/assets"
 )
