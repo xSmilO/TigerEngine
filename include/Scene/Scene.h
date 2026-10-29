@@ -31,6 +31,8 @@ class Scene {
 
     void OnWindowResized(int width, int height);
 
+    void OnGUI();
+
   private:
     std::vector<GameObject *> m_Objects;
 

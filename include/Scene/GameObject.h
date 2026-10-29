@@ -36,6 +36,10 @@ class GameObject {
         return nullptr;
     }
 
+    std::vector<Component *> GetComponents() {
+        return m_Components;
+    }
+
     Vector2 Position;
     Vector2 Scale;
     float Rotation;

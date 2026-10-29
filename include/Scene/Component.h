@@ -18,6 +18,9 @@ class Component {
     virtual void Draw() {
     }
 
+    virtual void OnGUI() {
+    }
+
     // A pointer to the GameObject this component is attached to
     GameObject *Owner = nullptr;
 };

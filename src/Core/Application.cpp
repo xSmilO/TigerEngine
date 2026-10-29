@@ -76,10 +76,7 @@ void Application::Run() {
     float lastFrameTime = 0.0f;
 
     try {
-        std::cout << "Starting Scene..." << std::endl;
         m_CurrentScene.Start();
-
-        std::cout << "Starting Engine Loop..." << std::endl;
 
         while(!glfwWindowShouldClose(m_Window) && m_IsRunning) {
             float currentFrameTime = glfwGetTime();

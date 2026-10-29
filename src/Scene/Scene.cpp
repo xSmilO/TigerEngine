@@ -59,4 +59,11 @@ void Scene::OnWindowResized(int width, int height) {
         m_ActiveCamera->SetProjection(-aspectRatio * zoom, aspectRatio * zoom, -zoom, zoom);
     }
 }
+
+void Scene::OnGUI() {
+    for(auto *obj : m_Objects) {
+        for(auto *comp : obj->GetComponents())
+            comp->OnGUI();
+    }
+}
 } // namespace TigerEngine

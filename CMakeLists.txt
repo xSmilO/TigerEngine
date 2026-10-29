@@ -39,15 +39,24 @@ add_executable(${PROJECT_NAME}
     src/Graphics/stb_image.cpp
     src/Graphics/OrthographicCamera.cpp
     src/Graphics/Shader.cpp
+    src/Graphics/UI.cpp
     src/Scene/GameObject.cpp
     src/Scene/Scene.cpp
     src/Scene/RigidBody2D.cpp
     src/Scene/SpriteRenderer.cpp
+
+    vendor/imgui/imgui.cpp
+    vendor/imgui/imgui_draw.cpp
+    vendor/imgui/imgui_tables.cpp
+    vendor/imgui/imgui_widgets.cpp
+    vendor/imgui/backends/imgui_impl_glfw.cpp
+    vendor/imgui/backends/imgui_impl_opengl3.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     include
     vendor
+    vendor/imgui
 )
 
 # Link everything together
