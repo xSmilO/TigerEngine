@@ -1,5 +1,5 @@
 #include "Core/Application.h"
-#include "Scene/Component.h"
+#include "Core/Component.h"
 
 namespace TigerEngine {
 class ClassicCamera : public TigerEngine::Component {

@@ -1,6 +1,6 @@
 #pragma once
+#include "Core/Component.h"
 #include "Graphics/Material.h" // Include the new Material system
-#include "Scene/Component.h"
 
 namespace TigerEngine {
 enum class ShapeType {

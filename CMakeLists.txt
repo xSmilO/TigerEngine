@@ -31,24 +31,29 @@ find_package(OpenGL REQUIRED)
 
 add_executable(${PROJECT_NAME} 
     src/main.cpp
+    
     src/Core/Application.cpp
     src/Core/Input.cpp
     src/Core/AudioSystem.cpp
+    src/Core/UI.cpp
+
     src/Graphics/Renderer2D.cpp
     src/Graphics/Texture.cpp
     src/Graphics/stb_image.cpp
     src/Graphics/OrthographicCamera.cpp
     src/Graphics/Shader.cpp
-    src/Graphics/UI.cpp
+    
     src/Scene/GameObject.cpp
     src/Scene/Scene.cpp
     src/Scene/RigidBody2D.cpp
     src/Scene/SpriteRenderer.cpp
+    src/Scene/BoxCollider2D.cpp
 
     vendor/imgui/imgui.cpp
     vendor/imgui/imgui_draw.cpp
     vendor/imgui/imgui_tables.cpp
     vendor/imgui/imgui_widgets.cpp
+    
     vendor/imgui/backends/imgui_impl_glfw.cpp
     vendor/imgui/backends/imgui_impl_opengl3.cpp
 )

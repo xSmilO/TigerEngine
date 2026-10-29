@@ -1,4 +1,5 @@
 #include "Core/Input.h"
+#include "imgui.h"
 #include <GLFW/glfw3.h>
 
 namespace TigerEngine {
@@ -9,6 +10,11 @@ void Input::Init(GLFWwindow *window) {
 }
 
 bool Input::IsKeyPressed(KeyCode key) {
+    ImGuiIO &io = ImGui::GetIO();
+    if(io.WantCaptureKeyboard) {
+        return false;
+    }
+
     if(!s_Window)
         return false;
     int state = glfwGetKey(s_Window, key);

@@ -1,6 +1,6 @@
 #pragma once
+#include "Core/Component.h"
 #include "Core/Math.h"
-#include "Scene/Component.h"
 
 namespace TigerEngine {
 class RigidBody2D : public Component {
@@ -9,9 +9,8 @@ class RigidBody2D : public Component {
     bool IsGrounded = false;
     bool HasCollision = true;
 
-    void Move(const Vector2 &velocity, float deltaTime);
+    void Move(Vector2 &velocity, float deltaTime);
 
   private:
-    bool CheckCollision(const GameObject *other) const;
 };
 } // namespace TigerEngine

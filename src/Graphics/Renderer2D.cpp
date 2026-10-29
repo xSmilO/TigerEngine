@@ -16,6 +16,10 @@ unsigned int Renderer2D::s_EBO = 0;
 Shader *Renderer2D::s_Shader = nullptr;
 
 void Renderer2D::Init() {
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // 1. Setup Quad VAO/VBO/EBO
     glGenVertexArrays(1, &s_VAO);
     glBindVertexArray(s_VAO);

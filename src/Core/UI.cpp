@@ -1,4 +1,4 @@
-#include "Graphics/UI.h"
+#include "Core/UI.h"
 #include "imgui.h"
 
 namespace TigerEngine {
@@ -22,6 +22,14 @@ bool UI::Button(const std::string &label, const glm::vec2 &size) {
 
 void UI::Separator() {
     ImGui::Separator();
+}
+
+bool UI::SliderFloat(const std::string &label, float *value, float min, float max) {
+    return ImGui::SliderFloat(label.c_str(), value, min, max);
+}
+
+bool UI::Checkbox(const std::string &label, bool *value) {
+    return ImGui::Checkbox(label.c_str(), value);
 }
 
 } // namespace TigerEngine

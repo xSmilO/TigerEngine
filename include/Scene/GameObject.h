@@ -1,7 +1,7 @@
 #pragma once
+#include "Core/Component.h"
 #include "Core/Math.h"
 #include "Graphics/Texture.h"
-#include "Scene/Component.h"
 #include <memory>
 #include <vector>
 

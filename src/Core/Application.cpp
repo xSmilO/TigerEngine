@@ -2,6 +2,9 @@
 #include "Core/AudioSystem.h"
 #include "Core/Input.h"
 #include "Graphics/Renderer2D.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+#include "imgui.h"
 #include <iostream>
 
 namespace TigerEngine {
@@ -15,6 +18,11 @@ Application::Application(int width, int height, const std::string &title)
 
 Application::~Application() {
     Renderer2D::Shutdown();
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     AudioSystem::Shutdown();
     glfwTerminate();
 }
@@ -69,6 +77,16 @@ void Application::Init() {
 
     Renderer2D::Init();
     AudioSystem::Init();
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
     Input::Init(m_Window);
 }
 
@@ -86,12 +104,17 @@ void Application::Run() {
             if(glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
                 m_IsRunning = false;
 
-            m_CurrentScene.Update(deltaTime);
+            float scaledDeltaTime = deltaTime * TimeScale;
+
+            m_CurrentScene.Update(scaledDeltaTime);
 
             glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             m_CurrentScene.Draw();
+            ImGuiBegin();
+            m_CurrentScene.OnGUI();
+            ImGuiEnd();
 
             glfwSwapBuffers(m_Window);
             glfwPollEvents();
@@ -101,5 +124,16 @@ void Application::Run() {
     } catch(...) {
         std::cout << "\nUNKNOWN FATAL CRASH OCCURRED!\n" << std::endl;
     }
+}
+
+void Application::ImGuiBegin() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
+
+void Application::ImGuiEnd() {
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 } // namespace TigerEngine

@@ -1,5 +1,6 @@
 #pragma once
 #include "Graphics/OrthographicCamera.h"
+#include "Scene/BoxCollider2D.h"
 #include "Scene/GameObject.h"
 #include <vector>
 
@@ -32,6 +33,16 @@ class Scene {
     void OnWindowResized(int width, int height);
 
     void OnGUI();
+
+    std::vector<class BoxCollider2D *> GetAllColliders() {
+        std::vector<BoxCollider2D *> colliders;
+        for(auto *obj : m_Objects) {
+            auto *col = obj->GetComponent<BoxCollider2D>();
+            if(col)
+                colliders.push_back(col);
+        }
+        return colliders;
+    }
 
   private:
     std::vector<GameObject *> m_Objects;

@@ -20,6 +20,9 @@ class Application {
         return *s_Instance;
     }
 
+    float TimeScale = 1.0f;
+    bool ShowHitboxes = false;
+
   private:
     static Application *s_Instance;
 
@@ -31,5 +34,9 @@ class Application {
     bool m_IsRunning;
 
     Scene m_CurrentScene;
+
+    void ImGuiBegin();
+
+    void ImGuiEnd();
 };
 } // namespace TigerEngine
