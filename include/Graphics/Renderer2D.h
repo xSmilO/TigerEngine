@@ -21,6 +21,9 @@ class Renderer2D {
     // ADD THIS: Draws a textured quad using a matrix
     static void DrawQuad(const glm::mat4 &transform, const Texture *texture, const Vector4 &tintColor);
 
+    static void DrawQuad(const glm::mat4 &transform, const Texture *texture,
+                         const Vector4 &tintColor, const Vector2 &uvMin, const Vector2 &uvMax);
+
     static void DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &color, float rotation = 0.0f);
 
     static void DrawPolygon(const Vector2 &position, const Vector2 &size, int sides, const Vector4 &color,

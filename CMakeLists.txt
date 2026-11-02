@@ -55,6 +55,8 @@ add_executable(${PROJECT_NAME}
     src/Scene/RigidBody2D.cpp
     src/Scene/SpriteRenderer.cpp
     src/Scene/BoxCollider2D.cpp
+    src/Scene/SpriteAnimator.cpp
+    src/Scene/SpriteRenderer.cpp
 
     vendor/imgui/imgui.cpp
     vendor/imgui/imgui_draw.cpp

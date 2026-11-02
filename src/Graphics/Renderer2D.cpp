@@ -104,6 +104,7 @@ void Renderer2D::DrawQuad(const glm::mat4 &transform, const Vector4 &color) {
     s_Shader->Bind();
 
     s_Shader->SetMat4("u_Transform", transform);
+    s_Shader->SetFloat4("u_UVRect", 0.0f, 0.0f, 1.0f, 1.0f);
     s_Shader->SetFloat4("u_Color", color.r, color.g, color.b, color.a);
     s_Shader->SetInt("u_HasTexture", 0);
 
@@ -115,6 +116,7 @@ void Renderer2D::DrawQuad(const glm::mat4 &transform, const Texture *texture, co
     s_Shader->Bind();
 
     s_Shader->SetMat4("u_Transform", transform);
+    s_Shader->SetFloat4("u_UVRect", 0.0f, 0.0f, 1.0f, 1.0f);
 
     s_Shader->SetFloat4("u_Color", tintColor.r, tintColor.g, tintColor.b, tintColor.a);
 
@@ -128,6 +130,25 @@ void Renderer2D::DrawQuad(const glm::mat4 &transform, const Texture *texture, co
 
     glBindVertexArray(s_VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Renderer2D::DrawQuad(const glm::mat4 &transform, const Texture *texture,
+                          const Vector4 &tintColor, const Vector2 &uvMin, const Vector2 &uvMax) {
+    s_Shader->Bind();
+    s_Shader->SetMat4("u_Transform", transform);
+    s_Shader->SetFloat4("u_Color", tintColor.r, tintColor.g, tintColor.b, tintColor.a);
+    s_Shader->SetFloat4("u_UVRect", uvMin.x, uvMin.y, uvMax.x, uvMax.y);
+    if(texture) {
+        texture->Bind(0);
+        s_Shader->SetInt("u_Texture", 0);
+        s_Shader->SetInt("u_HasTexture", 1);
+    } else {
+        s_Shader->SetInt("u_HasTexture", 0);
+    }
+    glBindVertexArray(s_VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    // Reset for older rendering paths that don't use the UV rectangle.
+    s_Shader->SetFloat4("u_UVRect", 0.0f, 0.0f, 1.0f, 1.0f);
 }
 
 void Renderer2D::DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &tintColor, float rotation) {

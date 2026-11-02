@@ -8,6 +8,7 @@
 #include "Scene/Camera/SmoothCamera.h"
 #include "Scene/RigidBody2D.h"
 #include "Scene/SpriteRenderer.h"
+#include "Scene/SpriteAnimator.h"
 #include <iostream>
 
 class PlayerController : public TigerEngine::Component {
@@ -67,13 +68,12 @@ class PlayerController : public TigerEngine::Component {
 
 int main() {
     TigerEngine::Application app(1280, 720, "TigerEngine");
+
     // 1. CREATE MATERIALS (Do this once)
     TigerEngine::Texture *playerTex = new TigerEngine::Texture("assets/czadomen.jpg");
 
-    app.SetClearColor({0.08f, 0.12f, 0.20f, 1.0f});
-
-    // TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
-    // TigerEngine::AudioSystem::SetMusicVolume(0.1);
+    TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
+    TigerEngine::AudioSystem::SetMusicVolume(0.1);
 
     TigerEngine::Material *matPlayer =
         new TigerEngine::Material(TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), playerTex); // Cyan
@@ -97,37 +97,23 @@ int main() {
     floor->AddComponent<TigerEngine::RigidBody2D>();
     floor->AddComponent<TigerEngine::BoxCollider2D>();
 
+    // Sprite animation DEMO: 4 frames in one row, looping every 0.12 seconds.
+    // Demo assets live at assets/demo/animated_sprite.png.
+    TigerEngine::Texture animationAtlas("assets/demo/animated_sprite.png");
+    TigerEngine::Material animationMaterial(
+        TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), &animationAtlas);
+    auto* animatedObject = new TigerEngine::GameObject();
+    animatedObject->Position = {0.8f, 0.25f};
+    animatedObject->Scale = {0.5f, 0.5f};
+    animatedObject->AddComponent<TigerEngine::SpriteRenderer>(&animationMaterial);
+    auto* animator = animatedObject->AddComponent<TigerEngine::SpriteAnimator>();
+    animator->AddAnimation("Idle", TigerEngine::SpriteAnimator::Grid(4, 1, 0, 4, 0.12f));
+    animator->Play("Idle");
+    app.GetScene().AddObject(animatedObject);
+
     // Add to scene...
     app.GetScene().AddObject(player);
     app.GetScene().AddObject(floor);
-
-    // --- Game UI demo: all UI creation lives in main.cpp ---
-    auto &ui = app.GetUIManager();
-    auto *panel = ui.CreatePanel({-20.0f, 20.0f}, {340.0f, 190.0f});
-    panel->SetAnchor(TigerEngine::UIElement::Anchor::TopRight);
-
-    auto *title = ui.CreateLabel("TigerEngine UI", {16.0f, 12.0f});
-    title->SetParent(panel);
-
-    auto *button = ui.CreateButton("Play", {16.0f, 76.0f}, {240.0f, 54.0f});
-    button->SetParent(panel);
-    // Texture objects must remain alive until app.Run() finishes.
-    TigerEngine::Texture buttonNormal("assets/ui/button_normal.png");
-    TigerEngine::Texture buttonHover("assets/ui/button_hover.png");
-    TigerEngine::Texture buttonPressed("assets/ui/button_pressed.png");
-    button->SetTextures(&buttonNormal, &buttonHover, &buttonPressed);
-    // Border widths in original texture pixels: left, right, top, bottom.
-    button->SetNineSlice(16.0f, 16.0f, 16.0f, 16.0f);
-    // Make the button wider: corners will keep their original size.
-    button->Size = {290.0f, 70.0f};
-    button->SetTextAlignment(TigerEngine::HorizontalAlignment::Center, TigerEngine::VerticalAlignment::Center);
-    button->SetOnClick([]() { std::cout << "Play clicked!\n"; });
-
-    // A screen-centered element demonstrates resize-aware anchoring.
-    auto *centerLabel = ui.CreateLabel("Centered label", {0.0f, 0.0f});
-    centerLabel->SetAnchor(TigerEngine::UIElement::Anchor::Center);
-    // Labels need their Size for exact centering; this is approximate text width.
-    centerLabel->Size = {220.0f, 36.0f};
 
     try {
         std::cout << "Starting Engine Loop..." << std::endl;

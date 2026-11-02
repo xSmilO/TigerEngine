@@ -20,6 +20,15 @@ class SpriteRenderer : public Component {
         : SharedMaterial(material), Shape(shape), PolygonSides(6) {
     }
 
+    // UV range defaults to the full texture. Each SpriteRenderer owns its own UVs,
+    // so multiple objects can share one material/texture but show different frames.
+    void SetUVRect(const Vector2& uvMin, const Vector2& uvMax) {
+        UVMin = uvMin;
+        UVMax = uvMax;
+    }
+    Vector2 UVMin{0.0f, 0.0f};
+    Vector2 UVMax{1.0f, 1.0f};
+
     void Draw() override;
 };
 } // namespace TigerEngine
