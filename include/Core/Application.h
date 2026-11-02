@@ -28,6 +28,18 @@ class Application {
     float TimeScale = 1.0f;
     bool ShowHitboxes = false;
 
+    // 0 = unlimited. A positive value caps the main-loop frame rate.
+    void SetTargetFPS(int fps);
+    int GetTargetFPS() const { return m_TargetFPS; }
+
+    // Enables/disables swap-interval synchronization (typically monitor refresh).
+    void SetVSync(bool enabled);
+    bool IsVSyncEnabled() const { return m_VSync; }
+
+    // RGBA components in the range [0, 1].
+    void SetClearColor(const Vector4& color) { m_ClearColor = color; }
+    const Vector4& GetClearColor() const { return m_ClearColor; }
+
   private:
     static Application *s_Instance;
 
@@ -37,6 +49,9 @@ class Application {
     int m_Width, m_Height;
     std::string m_Title;
     bool m_IsRunning;
+    int m_TargetFPS = 0;
+    bool m_VSync = true;
+    Vector4 m_ClearColor{0.1f, 0.1f, 0.15f, 1.0f};
 
     Scene m_CurrentScene;
     UIManager m_UIManager;

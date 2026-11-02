@@ -67,9 +67,10 @@ class PlayerController : public TigerEngine::Component {
 
 int main() {
     TigerEngine::Application app(1280, 720, "TigerEngine");
-
     // 1. CREATE MATERIALS (Do this once)
     TigerEngine::Texture *playerTex = new TigerEngine::Texture("assets/czadomen.jpg");
+
+    app.SetClearColor({0.08f, 0.12f, 0.20f, 1.0f});
 
     // TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
     // TigerEngine::AudioSystem::SetMusicVolume(0.1);
@@ -115,6 +116,10 @@ int main() {
     TigerEngine::Texture buttonHover("assets/ui/button_hover.png");
     TigerEngine::Texture buttonPressed("assets/ui/button_pressed.png");
     button->SetTextures(&buttonNormal, &buttonHover, &buttonPressed);
+    // Border widths in original texture pixels: left, right, top, bottom.
+    button->SetNineSlice(16.0f, 16.0f, 16.0f, 16.0f);
+    // Make the button wider: corners will keep their original size.
+    button->Size = {290.0f, 70.0f};
     button->SetTextAlignment(TigerEngine::HorizontalAlignment::Center, TigerEngine::VerticalAlignment::Center);
     button->SetOnClick([]() { std::cout << "Play clicked!\n"; });
 

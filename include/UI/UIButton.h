@@ -19,6 +19,15 @@ public:
     const Texture* HoverTexture = nullptr;
     const Texture* PressTexture = nullptr;
     glm::vec4 TextureTint{1.0f};
+    // Source-image border sizes in pixels: left, right, top, bottom.
+    // When enabled, corners stay fixed, edges stretch along one axis, center stretches both.
+    bool UseNineSlice = false;
+    glm::vec4 NineSliceBorders{0.0f};
+    void SetNineSlice(float left, float right, float top, float bottom) {
+        NineSliceBorders = {left, right, top, bottom};
+        UseNineSlice = true;
+    }
+    void DisableNineSlice() { UseNineSlice = false; }
     void SetTexture(const Texture* texture) { NormalTexture = texture; }
     void SetTextures(const Texture* normal, const Texture* hover = nullptr,
                      const Texture* pressed = nullptr) {

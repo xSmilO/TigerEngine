@@ -122,19 +122,20 @@ void UIManager::DrawRect(glm::vec2 p, glm::vec2 s, glm::vec4 color) const {
 void UIManager::DrawTexture(glm::vec2 p, glm::vec2 s, const Texture* texture, glm::vec4 tint) const {
     DrawQuad(p, s, tint, texture);
 }
-void UIManager::DrawQuad(glm::vec2 p, glm::vec2 s, glm::vec4 color, const Texture* texture) const {
+void UIManager::DrawQuad(glm::vec2 p, glm::vec2 s, glm::vec4 color, const Texture* texture,
+                         glm::vec2 uvMin, glm::vec2 uvMax) const {
     if (s.x <= 0 || s.y <= 0 || !m_Program) return;
     GLint vp[4]; glGetIntegerv(GL_VIEWPORT, vp);
     if (vp[2] <= 0 || vp[3] <= 0) return;
     const auto proj = glm::ortho(0.0f, float(vp[2]), float(vp[3]), 0.0f);
     // Image top corresponds to UV v=1: Texture loads via stb_image vertical flip.
     const float v[] = {
-        p.x,     p.y,     0,1,
-        p.x+s.x, p.y,     1,1,
-        p.x+s.x, p.y+s.y, 1,0,
-        p.x,     p.y,     0,1,
-        p.x+s.x, p.y+s.y, 1,0,
-        p.x,     p.y+s.y, 0,0
+        p.x,     p.y,     uvMin.x,uvMax.y,
+        p.x+s.x, p.y,     uvMax.x,uvMax.y,
+        p.x+s.x, p.y+s.y, uvMax.x,uvMin.y,
+        p.x,     p.y,     uvMin.x,uvMax.y,
+        p.x+s.x, p.y+s.y, uvMax.x,uvMin.y,
+        p.x,     p.y+s.y, uvMin.x,uvMin.y
     };
     glUseProgram(m_Program);
     glUniformMatrix4fv(glGetUniformLocation(m_Program,"u_Projection"), 1, GL_FALSE, glm::value_ptr(proj));
@@ -149,6 +150,44 @@ void UIManager::DrawQuad(glm::vec2 p, glm::vec2 s, glm::vec4 color, const Textur
     glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(v),v);
     glDrawArrays(GL_TRIANGLES,0,6);
     glBindVertexArray(0);
+}
+void UIManager::DrawNineSlice(glm::vec2 p, glm::vec2 size, const Texture* texture,
+                              glm::vec4 borders, glm::vec4 tint) const {
+    if (!texture || size.x <= 0 || size.y <= 0 ||
+        texture->GetWidth() <= 0 || texture->GetHeight() <= 0) return;
+
+    const float texW = static_cast<float>(texture->GetWidth());
+    const float texH = static_cast<float>(texture->GetHeight());
+    float l = std::clamp(borders.x, 0.0f, texW);
+    float r = std::clamp(borders.y, 0.0f, texW);
+    float t = std::clamp(borders.z, 0.0f, texH);
+    float b = std::clamp(borders.w, 0.0f, texH);
+    // Avoid overlapping source corners when borders are larger than the source image.
+    if (l + r > texW) { float ratio = texW / (l + r); l *= ratio; r *= ratio; }
+    if (t + b > texH) { float ratio = texH / (t + b); t *= ratio; b *= ratio; }
+
+    // Keep corners at their natural pixel size where possible; proportionally shrink
+    // the borders if the target button is smaller than their combined width/height.
+    float dl = l, dr = r, dt = t, db = b;
+    if (dl + dr > size.x) { float ratio = size.x / (dl + dr); dl *= ratio; dr *= ratio; }
+    if (dt + db > size.y) { float ratio = size.y / (dt + db); dt *= ratio; db *= ratio; }
+
+    const float x[] = {p.x, p.x + dl, p.x + size.x - dr, p.x + size.x};
+    const float y[] = {p.y, p.y + dt, p.y + size.y - db, p.y + size.y};
+    // Normalized source boundaries from LEFT/TOP to RIGHT/BOTTOM.
+    const float u[] = {0.0f, l / texW, 1.0f - r / texW, 1.0f};
+    const float v[] = {0.0f, t / texH, 1.0f - b / texH, 1.0f};
+
+    for (int row = 0; row < 3; ++row) {
+        for (int col = 0; col < 3; ++col) {
+            const glm::vec2 quadSize{x[col + 1] - x[col], y[row + 1] - y[row]};
+            if (quadSize.x <= 0 || quadSize.y <= 0) continue;
+            // DrawQuad expects v in GL orientation (bottom=0, top=1).
+            DrawQuad({x[col], y[row]}, quadSize, tint, texture,
+                     {u[col], 1.0f - v[row + 1]},
+                     {u[col + 1], 1.0f - v[row]});
+        }
+    }
 }
 void UIManager::Draw() const {
     if (!m_Program) return;

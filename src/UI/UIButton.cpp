@@ -9,7 +9,12 @@ void UIButton::Draw(const Font* font) const {
         const Texture* image = NormalTexture;
         if (Pressed && PressTexture) image = PressTexture;
         else if (Hovered && HoverTexture) image = HoverTexture;
-        if (image) UIManager::s_Current->DrawTexture(Position, Size, image, TextureTint);
+        if (image) {
+            if (UseNineSlice)
+                UIManager::s_Current->DrawNineSlice(Position, Size, image, NineSliceBorders, TextureTint);
+            else
+                UIManager::s_Current->DrawTexture(Position, Size, image, TextureTint);
+        }
         else UIManager::s_Current->DrawRect(Position, Size,
             Pressed ? PressBackground : Hovered ? HoverBackground : Background);
     }

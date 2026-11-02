@@ -7,6 +7,8 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 namespace TigerEngine {
 Application *Application::s_Instance = nullptr;
@@ -45,6 +47,7 @@ void Application::Init() {
         return;
     }
     glfwMakeContextCurrent(m_Window);
+    glfwSwapInterval(m_VSync ? 1 : 0);
 
     // Tell GLFW that the "User Pointer" for this window is our Application instance
     // This allows us to access m_CurrentScene from inside a static C-style callback function
@@ -99,15 +102,30 @@ void Application::Init() {
     Input::Init(m_Window);
 }
 
+void Application::SetTargetFPS(int fps) {
+    m_TargetFPS = fps > 0 ? fps : 0;
+    // Disable vsync when explicitly capping FPS so the requested limit is not
+    // constrained by the display's swap interval. Call SetVSync(true) to opt back in.
+    if (m_TargetFPS > 0) SetVSync(false);
+}
+
+void Application::SetVSync(bool enabled) {
+    m_VSync = enabled;
+    if (m_Window) {
+        glfwMakeContextCurrent(m_Window);
+        glfwSwapInterval(enabled ? 1 : 0);
+    }
+}
+
 void Application::Run() {
-    float lastFrameTime = 0.0f;
+    double lastFrameTime = glfwGetTime();
 
     try {
         m_CurrentScene.Start();
 
         while(!glfwWindowShouldClose(m_Window) && m_IsRunning) {
-            float currentFrameTime = glfwGetTime();
-            float deltaTime = currentFrameTime - lastFrameTime;
+            double currentFrameTime = glfwGetTime();
+            float deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);
             lastFrameTime = currentFrameTime;
 
             if(glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -117,7 +135,7 @@ void Application::Run() {
 
             m_CurrentScene.Update(scaledDeltaTime);
 
-            glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+            glClearColor(m_ClearColor.r, m_ClearColor.g, m_ClearColor.b, m_ClearColor.a);
             glClear(GL_COLOR_BUFFER_BIT);
 
             m_CurrentScene.Draw();
@@ -139,6 +157,17 @@ void Application::Run() {
 
             glfwSwapBuffers(m_Window);
             glfwPollEvents();
+
+            // Limit completed frames, including CPU update + rendering + swap.
+            // Sleep until the current frame has consumed at least 1 / targetFPS.
+            // VSync may also impose a slower rate if explicitly re-enabled.
+            if (m_TargetFPS > 0) {
+                const double frameSeconds = 1.0 / static_cast<double>(m_TargetFPS);
+                const double remaining = frameSeconds - (glfwGetTime() - currentFrameTime);
+                if (remaining > 0.0) {
+                    std::this_thread::sleep_for(std::chrono::duration<double>(remaining));
+                }
+            }
         }
     } catch(const std::exception &e) {
         std::cout << "\nFATAL ENGINE CRASH: " << e.what() << "\n" << std::endl;
