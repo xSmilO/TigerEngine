@@ -3,6 +3,9 @@
 #include <functional>
 #include <utility>
 namespace TigerEngine {
+enum class HorizontalAlignment { Left, Center, Right };
+enum class VerticalAlignment { Top, Center, Bottom };
+
 class UIButton : public UIElement {
 public:
     std::string Text;
@@ -12,6 +15,14 @@ public:
     glm::vec4 TextColor{1.0f};
     std::function<void()> OnClick;
     bool Hovered = false, Pressed = false;
+    HorizontalAlignment TextHorizontalAlignment = HorizontalAlignment::Center;
+    VerticalAlignment TextVerticalAlignment = VerticalAlignment::Center;
+    glm::vec2 TextPadding{12.0f, 8.0f};
+    void SetTextAlignment(HorizontalAlignment horizontal, VerticalAlignment vertical) {
+        TextHorizontalAlignment = horizontal;
+        TextVerticalAlignment = vertical;
+    }
+    void SetTextPadding(glm::vec2 padding) { TextPadding = padding; }
     void SetOnClick(std::function<void()> callback) { OnClick = std::move(callback); }
     void Draw(const Font* font) const override;
 };

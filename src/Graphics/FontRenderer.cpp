@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #define STB_TRUETYPE_IMPLEMENTATION
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -47,6 +48,62 @@ Font::Font(const std::string &path, float pixelHeight) : m_PixelHeight(pixelHeig
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+glm::vec2 Font::MeasureText(const std::string &text) const {
+    if(text.empty())
+        return {0.0f, 0.0f};
+
+    float lineWidth = 0.0f;
+    float maxWidth = 0.0f;
+    int lineCount = 1;
+    for(unsigned char c : text) {
+        if(c == '\n') {
+            maxWidth = std::max(maxWidth, lineWidth);
+            lineWidth = 0.0f;
+            ++lineCount;
+            continue;
+        }
+        if(c < 32 || c > 126)
+            c = '?'; // Matches DrawText's ASCII fallback.
+        lineWidth += m_Glyphs[c - 32].xadvance;
+    }
+    maxWidth = std::max(maxWidth, lineWidth);
+    return {maxWidth, m_PixelHeight + (lineCount - 1) * m_PixelHeight * 1.25f};
+}
+
+Font::TextBounds Font::MeasureVisibleBounds(const std::string &text) const {
+    TextBounds bounds{};
+    bool hasVisibleGlyph = false;
+    float x = 0.0f;
+    float baselineY = m_PixelHeight;
+
+    for(unsigned char c : text) {
+        if(c == '\n') {
+            x = 0.0f;
+            baselineY += m_PixelHeight * 1.25f;
+            continue;
+        }
+        if(c < 32 || c > 126)
+            c = '?'; // Same fallback as DrawText.
+        const auto &glyph = m_Glyphs[c - 32];
+        const float w = glyph.x1 - glyph.x0;
+        const float h = glyph.y1 - glyph.y0;
+        if(w > 0.0f && h > 0.0f) {
+            const glm::vec2 glyphMin{x + glyph.xoff, baselineY + glyph.yoff};
+            const glm::vec2 glyphMax{glyphMin.x + w, glyphMin.y + h};
+            if(!hasVisibleGlyph) {
+                bounds.Min = glyphMin;
+                bounds.Max = glyphMax;
+                hasVisibleGlyph = true;
+            } else {
+                bounds.Min = glm::min(bounds.Min, glyphMin);
+                bounds.Max = glm::max(bounds.Max, glyphMax);
+            }
+        }
+        x += glyph.xadvance;
+    }
+    return bounds;
 }
 
 Font::~Font() {

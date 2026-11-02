@@ -18,6 +18,15 @@ public:
 
     bool IsValid() const { return m_Texture != 0; }
     float GetPixelHeight() const { return m_PixelHeight; }
+    glm::vec2 MeasureText(const std::string& text) const;
+    // Visible glyph rectangle relative to DrawText's topLeft position.
+    // Bounds are approximate for spaces and cover the baked glyph quads.
+    struct TextBounds {
+        glm::vec2 Min{0.0f};
+        glm::vec2 Max{0.0f};
+        glm::vec2 Size() const { return Max - Min; }
+    };
+    TextBounds MeasureVisibleBounds(const std::string& text) const;
 
 private:
     friend class FontRenderer;
