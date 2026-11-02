@@ -110,6 +110,12 @@ int main() {
 
     auto *button = ui.CreateButton("Play", {16.0f, 76.0f}, {240.0f, 54.0f});
     button->SetParent(panel);
+    // Texture objects must remain alive until app.Run() finishes.
+    TigerEngine::Texture buttonNormal("assets/ui/button_normal.png");
+    TigerEngine::Texture buttonHover("assets/ui/button_hover.png");
+    TigerEngine::Texture buttonPressed("assets/ui/button_pressed.png");
+    button->SetTextures(&buttonNormal, &buttonHover, &buttonPressed);
+    button->SetTextAlignment(TigerEngine::HorizontalAlignment::Center, TigerEngine::VerticalAlignment::Center);
     button->SetOnClick([]() { std::cout << "Play clicked!\n"; });
 
     // A screen-centered element demonstrates resize-aware anchoring.

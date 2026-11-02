@@ -36,6 +36,8 @@ private:
     std::vector<UIElement*> OrderedElements() const;
     unsigned int m_Program = 0, m_VAO = 0, m_VBO = 0;
     void DrawRect(glm::vec2 position, glm::vec2 size, glm::vec4 color) const;
+    void DrawTexture(glm::vec2 position, glm::vec2 size, const Texture* texture, glm::vec4 tint) const;
+    void DrawQuad(glm::vec2 position, glm::vec2 size, glm::vec4 color, const Texture* texture) const;
     friend class UIPanel;
     friend class UIButton;
     static UIManager* s_Current;

@@ -5,9 +5,14 @@
 
 namespace TigerEngine {
 void UIButton::Draw(const Font* font) const {
-    if (UIManager::s_Current)
-        UIManager::s_Current->DrawRect(Position, Size,
+    if (UIManager::s_Current) {
+        const Texture* image = NormalTexture;
+        if (Pressed && PressTexture) image = PressTexture;
+        else if (Hovered && HoverTexture) image = HoverTexture;
+        if (image) UIManager::s_Current->DrawTexture(Position, Size, image, TextureTint);
+        else UIManager::s_Current->DrawRect(Position, Size,
             Pressed ? PressBackground : Hovered ? HoverBackground : Background);
+    }
 
     if (!font || Text.empty()) return;
 

@@ -1,4 +1,5 @@
 #include "UI/UIManager.h"
+#include "Graphics/Texture.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -34,12 +35,19 @@ void UIManager::Init() {
     if (m_Program) return;
     constexpr const char* vs = R"(#version 330 core
 layout(location = 0) in vec2 a_Pos;
+layout(location = 1) in vec2 a_UV;
+out vec2 v_UV;
 uniform mat4 u_Projection;
-void main() { gl_Position = u_Projection * vec4(a_Pos, 0.0, 1.0); })";
+void main() { v_UV = a_UV; gl_Position = u_Projection * vec4(a_Pos, 0.0, 1.0); })";
     constexpr const char* fs = R"(#version 330 core
+in vec2 v_UV;
 out vec4 FragColor;
 uniform vec4 u_Color;
-void main() { FragColor = u_Color; })";
+uniform sampler2D u_Texture;
+uniform int u_UseTexture;
+void main() {
+    FragColor = u_Color * (u_UseTexture != 0 ? texture(u_Texture, v_UV) : vec4(1.0));
+})";
     unsigned int vertex = Compile(GL_VERTEX_SHADER, vs);
     unsigned int fragment = Compile(GL_FRAGMENT_SHADER, fs);
     m_Program = glCreateProgram();
@@ -54,9 +62,11 @@ void main() { FragColor = u_Color; })";
     glGenBuffers(1, &m_VBO);
     glBindVertexArray(m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, nullptr, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 24, nullptr, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 }
 void UIManager::Shutdown() {
@@ -107,15 +117,33 @@ void UIManager::Update(float mouseX, float mouseY, bool leftDown, bool inputBloc
     m_LastLeftDown = leftDown;
 }
 void UIManager::DrawRect(glm::vec2 p, glm::vec2 s, glm::vec4 color) const {
+    DrawQuad(p, s, color, nullptr);
+}
+void UIManager::DrawTexture(glm::vec2 p, glm::vec2 s, const Texture* texture, glm::vec4 tint) const {
+    DrawQuad(p, s, tint, texture);
+}
+void UIManager::DrawQuad(glm::vec2 p, glm::vec2 s, glm::vec4 color, const Texture* texture) const {
     if (s.x <= 0 || s.y <= 0 || !m_Program) return;
     GLint vp[4]; glGetIntegerv(GL_VIEWPORT, vp);
     if (vp[2] <= 0 || vp[3] <= 0) return;
     const auto proj = glm::ortho(0.0f, float(vp[2]), float(vp[3]), 0.0f);
-    float v[] = {p.x,p.y, p.x+s.x,p.y, p.x+s.x,p.y+s.y,
-                 p.x,p.y, p.x+s.x,p.y+s.y, p.x,p.y+s.y};
+    // Image top corresponds to UV v=1: Texture loads via stb_image vertical flip.
+    const float v[] = {
+        p.x,     p.y,     0,1,
+        p.x+s.x, p.y,     1,1,
+        p.x+s.x, p.y+s.y, 1,0,
+        p.x,     p.y,     0,1,
+        p.x+s.x, p.y+s.y, 1,0,
+        p.x,     p.y+s.y, 0,0
+    };
     glUseProgram(m_Program);
     glUniformMatrix4fv(glGetUniformLocation(m_Program,"u_Projection"), 1, GL_FALSE, glm::value_ptr(proj));
     glUniform4fv(glGetUniformLocation(m_Program,"u_Color"), 1, glm::value_ptr(color));
+    glUniform1i(glGetUniformLocation(m_Program,"u_UseTexture"), texture ? 1 : 0);
+    if (texture) {
+        texture->Bind(0);
+        glUniform1i(glGetUniformLocation(m_Program,"u_Texture"), 0);
+    }
     glBindVertexArray(m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER,m_VBO);
     glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(v),v);
