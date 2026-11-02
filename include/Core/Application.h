@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include "Graphics/FontRenderer.h"
+#include "UI/UIManager.h"
 
 namespace TigerEngine {
 class Application {
@@ -17,6 +18,8 @@ class Application {
     Scene &GetScene() {
         return m_CurrentScene;
     }
+
+    UIManager& GetUIManager() { return m_UIManager; }
 
     static Application &Get() {
         return *s_Instance;
@@ -36,7 +39,8 @@ class Application {
     bool m_IsRunning;
 
     Scene m_CurrentScene;
-    std::unique_ptr<Font> m_DemoFont; // Demo only; move to game UI later.
+    UIManager m_UIManager;
+    std::unique_ptr<Font> m_DemoFont; // Default font resource; UI elements are created in main.cpp.
 
     void ImGuiBegin();
 

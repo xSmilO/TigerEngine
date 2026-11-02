@@ -71,8 +71,8 @@ int main() {
     // 1. CREATE MATERIALS (Do this once)
     TigerEngine::Texture *playerTex = new TigerEngine::Texture("assets/czadomen.jpg");
 
-    TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
-    TigerEngine::AudioSystem::SetMusicVolume(0.1);
+    // TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
+    // TigerEngine::AudioSystem::SetMusicVolume(0.1);
 
     TigerEngine::Material *matPlayer =
         new TigerEngine::Material(TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), playerTex); // Cyan
@@ -99,6 +99,24 @@ int main() {
     // Add to scene...
     app.GetScene().AddObject(player);
     app.GetScene().AddObject(floor);
+
+    // --- Game UI demo: all UI creation lives in main.cpp ---
+    auto &ui = app.GetUIManager();
+    auto *panel = ui.CreatePanel({-20.0f, 20.0f}, {340.0f, 190.0f});
+    panel->SetAnchor(TigerEngine::UIElement::Anchor::TopRight);
+
+    auto *title = ui.CreateLabel("TigerEngine UI", {16.0f, 12.0f});
+    title->SetParent(panel);
+
+    auto *button = ui.CreateButton("Play", {16.0f, 76.0f}, {240.0f, 54.0f});
+    button->SetParent(panel);
+    button->SetOnClick([]() { std::cout << "Play clicked!\n"; });
+
+    // A screen-centered element demonstrates resize-aware anchoring.
+    auto *centerLabel = ui.CreateLabel("Centered label", {0.0f, 0.0f});
+    centerLabel->SetAnchor(TigerEngine::UIElement::Anchor::Center);
+    // Labels need their Size for exact centering; this is approximate text width.
+    centerLabel->Size = {220.0f, 36.0f};
 
     try {
         std::cout << "Starting Engine Loop..." << std::endl;

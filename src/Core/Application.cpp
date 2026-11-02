@@ -1,8 +1,8 @@
 #include "Core/Application.h"
 #include "Core/AudioSystem.h"
 #include "Core/Input.h"
-#include "Graphics/FontRenderer.h"
 #include "Graphics/Renderer2D.h"
+#include "Graphics/FontRenderer.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
@@ -18,6 +18,7 @@ Application::Application(int width, int height, const std::string &title)
 }
 
 Application::~Application() {
+    m_UIManager.Shutdown();
     m_DemoFont.reset();
     FontRenderer::Shutdown();
     Renderer2D::Shutdown();
@@ -80,11 +81,10 @@ void Application::Init() {
 
     Renderer2D::Init();
     FontRenderer::Init();
-    try {
-        m_DemoFont = std::make_unique<Font>("assets/fonts/main.ttf", 36.0f);
-    } catch(const std::exception &e) {
-        std::cerr << "Font demo skipped: " << e.what() << "\n";
-    }
+    m_UIManager.Init();
+    try { m_DemoFont = std::make_unique<Font>("assets/fonts/main.ttf", 36.0f); }
+    catch (const std::exception& e) { std::cerr << "Font demo skipped: " << e.what() << "\n"; }
+    if (m_DemoFont) m_UIManager.SetFont(m_DemoFont.get());
     AudioSystem::Init();
 
     IMGUI_CHECKVERSION();
@@ -121,12 +121,21 @@ void Application::Run() {
             glClear(GL_COLOR_BUFFER_BIT);
 
             m_CurrentScene.Draw();
-            // Draw game text after the world, before ImGui.
-            if(m_DemoFont)
-                FontRenderer::DrawText(*m_DemoFont, "Hello TigerEngine!", {24.0f, 24.0f});
-            // ImGuiBegin();
-            // m_CurrentScene.OnGUI();
-            // ImGuiEnd();
+            ImGuiBegin();
+            double mx = 0.0, my = 0.0;
+            glfwGetCursorPos(m_Window, &mx, &my);
+            int ww = 1, wh = 1, fw = 1, fh = 1;
+            glfwGetWindowSize(m_Window, &ww, &wh);
+            glfwGetFramebufferSize(m_Window, &fw, &fh);
+            m_UIManager.SetViewportSize({float(fw), float(fh)});
+            if (ww > 0 && wh > 0) {
+                m_UIManager.Update(float(mx * fw / ww), float(my * fh / wh),
+                    glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS,
+                    ImGui::GetIO().WantCaptureMouse);
+            }
+            m_UIManager.Draw();
+            m_CurrentScene.OnGUI();
+            ImGuiEnd();
 
             glfwSwapBuffers(m_Window);
             glfwPollEvents();
