@@ -43,6 +43,7 @@ class GameObject {
     Vector2 Position;
     Vector2 Scale;
     float Rotation;
+    std::string Name = "GameObject";
 
     Scene *CurrentScene;
 

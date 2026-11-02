@@ -1,7 +1,7 @@
 #include "Graphics/Texture.h"
 #include <glad/glad.h>
 #include <iostream>
-#include <stb_image/stb_image.h>
+#include <stb/stb_image.h>
 
 namespace TigerEngine {
 Texture::Texture(const std::string &path) : m_RendererID(0) {

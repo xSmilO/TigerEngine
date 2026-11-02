@@ -75,6 +75,10 @@ void RigidBody2D::Move(Vector2 &velocity, float deltaTime) {
                 Owner->Position.y = otherBottom - myHalfH - myCollider->Offset.y;
                 velocity.y = 0.0f; // Kill upward momentum if we hit a ceiling
             }
+
+            for(Component *comp : Owner->GetComponents()) {
+                comp->OnCollisionEnter(obj);
+            }
         }
     }
 }

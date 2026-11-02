@@ -21,6 +21,9 @@ class Component {
     virtual void OnGUI() {
     }
 
+    virtual void OnCollisionEnter(GameObject *other) {
+    }
+
     // A pointer to the GameObject this component is attached to
     GameObject *Owner = nullptr;
 };
