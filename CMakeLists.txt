@@ -37,6 +37,7 @@ add_executable(${PROJECT_NAME}
     src/Core/AudioSystem.cpp
     src/Core/UI.cpp
 
+    src/Graphics/FontRenderer.cpp
     src/Graphics/Renderer2D.cpp
     src/Graphics/Texture.cpp
     src/Graphics/stb_image.cpp

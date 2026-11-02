@@ -1,6 +1,7 @@
 #include "Core/Application.h"
 #include "Core/AudioSystem.h"
 #include "Core/Input.h"
+#include "Graphics/FontRenderer.h"
 #include "Graphics/Renderer2D.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -17,6 +18,8 @@ Application::Application(int width, int height, const std::string &title)
 }
 
 Application::~Application() {
+    m_DemoFont.reset();
+    FontRenderer::Shutdown();
     Renderer2D::Shutdown();
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -76,6 +79,12 @@ void Application::Init() {
         return;
 
     Renderer2D::Init();
+    FontRenderer::Init();
+    try {
+        m_DemoFont = std::make_unique<Font>("assets/fonts/main.ttf", 36.0f);
+    } catch(const std::exception &e) {
+        std::cerr << "Font demo skipped: " << e.what() << "\n";
+    }
     AudioSystem::Init();
 
     IMGUI_CHECKVERSION();
@@ -112,9 +121,12 @@ void Application::Run() {
             glClear(GL_COLOR_BUFFER_BIT);
 
             m_CurrentScene.Draw();
-            ImGuiBegin();
-            m_CurrentScene.OnGUI();
-            ImGuiEnd();
+            // Draw game text after the world, before ImGui.
+            if(m_DemoFont)
+                FontRenderer::DrawText(*m_DemoFont, "Hello TigerEngine!", {24.0f, 24.0f});
+            // ImGuiBegin();
+            // m_CurrentScene.OnGUI();
+            // ImGuiEnd();
 
             glfwSwapBuffers(m_Window);
             glfwPollEvents();

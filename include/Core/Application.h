@@ -4,6 +4,8 @@
 #include "Scene/Scene.h"
 #include <GLFW/glfw3.h>
 #include <string>
+#include <memory>
+#include "Graphics/FontRenderer.h"
 
 namespace TigerEngine {
 class Application {
@@ -34,6 +36,7 @@ class Application {
     bool m_IsRunning;
 
     Scene m_CurrentScene;
+    std::unique_ptr<Font> m_DemoFont; // Demo only; move to game UI later.
 
     void ImGuiBegin();
 
