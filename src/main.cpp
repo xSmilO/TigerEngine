@@ -76,9 +76,67 @@ class ShapeGuide : public TigerEngine::Component {
     }
 };
 
+// Hold left mouse to place the hexagon at a Point2D in world coordinates.
+class ShapeDemoControls : public TigerEngine::Component {
+    void Update(float) override {
+        using namespace TigerEngine;
+        if (!Owner || !Owner->CurrentScene) return;
+        auto* camera = Owner->CurrentScene->GetActiveCamera();
+        if (camera && Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
+            const Point2D point = Input::GetMouseWorldPosition(*camera);
+            Owner->Position = point;
+        }
+    }
+    void OnGUI() override {
+        using namespace TigerEngine;
+        UI::BeginWindow("Project Demo - Shapes");
+        UI::Text("A/D: move player | W: jump | Escape: close");
+        UI::Text("Hold left mouse outside panels to move the hexagon.");
+        const auto mouse = Input::GetMousePosition();
+        UI::Text("Mouse pixels: " + std::to_string(int(mouse.x)) + ", " + std::to_string(int(mouse.y)));
+        UI::Text("Hexagon world: " + std::to_string(Owner->Position.x) + ", " + std::to_string(Owner->Position.y));
+        UI::Separator();
+        UI::Text("Geometric transformations");
+        UI::SliderFloat("Rotation (degrees)", &Owner->Rotation, -180.0f, 180.0f);
+        UI::SliderFloat("Width", &Owner->Scale.x, 0.05f, 1.0f);
+        UI::SliderFloat("Height", &Owner->Scale.y, 0.05f, 1.0f);
+        auto* renderer = Owner->GetComponent<SpriteRenderer>();
+        if (renderer && renderer->SharedMaterial) {
+            auto& color = renderer->SharedMaterial->TintColor;
+            UI::Text("Fill color (RGBA)");
+            UI::SliderFloat("Red", &color.r, 0.0f, 1.0f);
+            UI::SliderFloat("Green", &color.g, 0.0f, 1.0f);
+            UI::SliderFloat("Blue", &color.b, 0.0f, 1.0f);
+            UI::SliderFloat("Opacity", &color.a, 0.0f, 1.0f);
+            if (UI::Button("Reset hexagon")) {
+                Owner->Position = {0.95f, 0.65f};
+                Owner->Scale = {0.3f, 0.3f};
+                Owner->Rotation = 0.0f;
+                color = {1.0f, 0.65f, 0.1f, 1.0f};
+            }
+        }
+        UI::EndWindow();
+    }
+};
+
+class AnimationDemoControls : public TigerEngine::Component {
+    void OnGUI() override {
+        using namespace TigerEngine;
+        auto* animator = Owner->GetComponent<SpriteAnimator>();
+        if (!animator) return;
+        UI::BeginWindow("Project Demo - Bitmap Animation");
+        UI::Text("Sprite sheet: 4 columns, 1 row; 0.12 seconds per frame");
+        UI::Text("Frame index (0-3): " + std::to_string(animator->GetFrameIndex()));
+        if (UI::Button("Stop animation")) animator->Stop();
+        if (UI::Button("Restart animation")) animator->Play("Idle", true);
+        UI::EndWindow();
+    }
+};
+
 int RunDemo() {
     TigerEngine::Application app(1280, 720, "TigerEngine");
     TigerEngine::AssetManager assets;
+    std::cout << "Hold left mouse outside the debug panel to move the orange hexagon.\n";
 
     auto playerTexture = assets.LoadTexture("assets/czadomen.jpg");
     auto sameTexture = assets.LoadTexture("./czadomen.jpg");
@@ -129,6 +187,7 @@ int RunDemo() {
     animatedObject->Scale = {0.5f, 0.5f};
     animatedObject->AddComponent<TigerEngine::SpriteRenderer>(animationMaterial);
     auto *animator = animatedObject->AddComponent<TigerEngine::SpriteAnimator>();
+    animatedObject->AddComponent<AnimationDemoControls>();
     animator->AddAnimation("Idle", TigerEngine::SpriteAnimator::Grid(4, 1, 0, 4, 0.12f));
     animator->Play("Idle");
     app.GetScene().AddObject(std::move(animatedObject));
@@ -148,6 +207,7 @@ int RunDemo() {
         std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(1.0f, 0.65f, 0.1f, 1.0f)),
         TigerEngine::ShapeType::Polygon);
     polygon->AddComponent<ShapeGuide>();
+    polygon->AddComponent<ShapeDemoControls>();
     app.GetScene().AddObject(std::move(polygon));
 
     // Add to scene...
