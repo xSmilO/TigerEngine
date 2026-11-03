@@ -49,7 +49,9 @@ void main() {
     FragColor = u_Color * (u_UseTexture != 0 ? texture(u_Texture, v_UV) : vec4(1.0));
 })";
     unsigned int vertex = Compile(GL_VERTEX_SHADER, vs);
-    unsigned int fragment = Compile(GL_FRAGMENT_SHADER, fs);
+    unsigned int fragment = 0;
+    try { fragment = Compile(GL_FRAGMENT_SHADER, fs); }
+    catch (...) { glDeleteShader(vertex); throw; }
     m_Program = glCreateProgram();
     glAttachShader(m_Program, vertex);
     glAttachShader(m_Program, fragment);

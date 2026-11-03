@@ -4,6 +4,7 @@
 #include "Graphics/Texture.h"
 #include <memory>
 #include <vector>
+#include <utility>
 
 namespace TigerEngine {
 class Scene;
@@ -12,32 +13,38 @@ class GameObject {
   public:
     GameObject();
     virtual ~GameObject();
+    GameObject(const GameObject&) = delete;
+    GameObject& operator=(const GameObject&) = delete;
 
     virtual void Start();
     virtual void Update(float deltaTime);
     virtual void Draw();
 
-    // --- COMPONENT SYSTEM ---
+    // Owns added components; returned pointers are borrowed until object destruction.
     template <typename T, typename... Args> T *AddComponent(Args &&...args) {
-        T *component = new T(std::forward<Args>(args)...);
+        auto owned = std::make_unique<T>(std::forward<Args>(args)...);
+        T *component = owned.get();
         component->Owner = this;
-        m_Components.push_back(component);
+        m_Components.push_back(std::move(owned));
         component->Start();
         return component;
     }
 
     template <typename T> T *GetComponent() {
-        for(Component *comp : m_Components) {
+        for(const auto& comp : m_Components) {
             // Check if the component matches the requested type
-            if(T *typedComp = dynamic_cast<T *>(comp)) {
+            if(T *typedComp = dynamic_cast<T *>(comp.get())) {
                 return typedComp;
             }
         }
         return nullptr;
     }
 
+    // Snapshot of borrowed pointers; callers must not delete components.
     std::vector<Component *> GetComponents() {
-        return m_Components;
+        std::vector<Component*> result;
+        for (const auto& comp : m_Components) result.push_back(comp.get());
+        return result;
     }
 
     Vector2 Position;
@@ -47,6 +54,7 @@ class GameObject {
 
     Scene *CurrentScene;
 
+    // Borrowed hierarchy links. Use AddChild to reparent and prevent cycles.
     GameObject *Parent = nullptr;
     std::vector<GameObject *> Children;
 
@@ -54,6 +62,6 @@ class GameObject {
     glm::mat4 GetWorldTransform() const;
 
   private:
-    std::vector<Component *> m_Components;
+    std::vector<std::unique_ptr<Component>> m_Components;
 };
 } // namespace TigerEngine

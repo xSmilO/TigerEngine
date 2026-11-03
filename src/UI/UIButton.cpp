@@ -6,9 +6,9 @@
 namespace TigerEngine {
 void UIButton::Draw(const Font* font) const {
     if (UIManager::s_Current) {
-        const Texture* image = NormalTexture;
-        if (Pressed && PressTexture) image = PressTexture;
-        else if (Hovered && HoverTexture) image = HoverTexture;
+        const Texture* image = NormalTexture.get();
+        if (Pressed && PressTexture) image = PressTexture.get();
+        else if (Hovered && HoverTexture) image = HoverTexture.get();
         if (image) {
             if (UseNineSlice)
                 UIManager::s_Current->DrawNineSlice(Position, Size, image, NineSliceBorders, TextureTint);

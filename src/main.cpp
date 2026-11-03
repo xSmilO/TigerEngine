@@ -67,7 +67,7 @@ class PlayerController : public TigerEngine::Component {
     }
 };
 
-int main() {
+int RunDemo() {
     TigerEngine::Application app(1280, 720, "TigerEngine");
     TigerEngine::AssetManager assets;
 
@@ -76,9 +76,9 @@ int main() {
     std::cout << "Cached textures: " << assets.TextureCount() << "\n";
     std::cout << "Same resource ?" << (playerTexture == sameTexture) << "\n";
 
-    TigerEngine::Material playerMaterial({1, 1, 1, 1}, playerTexture.get());
-    auto *player = new TigerEngine::GameObject();
-    player->AddComponent<TigerEngine::SpriteRenderer>(&playerMaterial);
+    auto playerMaterial = std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(1.0f), playerTexture);
+    auto player = std::make_unique<TigerEngine::GameObject>();
+    player->AddComponent<TigerEngine::SpriteRenderer>(playerMaterial);
     player->Scale = TigerEngine::Vector2(0.5f, 0.5f);
     player->AddComponent<TigerEngine::RigidBody2D>();
     player->AddComponent<TigerEngine::BoxCollider2D>(TigerEngine::Vector2(0.6f, 0.9f),
@@ -94,10 +94,10 @@ int main() {
     TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
     TigerEngine::AudioSystem::SetMusicVolume(0.1);
 
-    TigerEngine::Material *matFloor = new TigerEngine::Material(TigerEngine::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+    auto matFloor = std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 
     // 3. CREATE FLOOR
-    TigerEngine::GameObject *floor = new TigerEngine::GameObject();
+    auto floor = std::make_unique<TigerEngine::GameObject>();
     floor->Position = TigerEngine::Vector2(0.0f, -0.8f);
     floor->Scale = TigerEngine::Vector2(2.0f, 0.2f);
     floor->AddComponent<TigerEngine::SpriteRenderer>(matFloor); // Pass the material!
@@ -106,20 +106,20 @@ int main() {
 
     // Sprite animation DEMO: 4 frames in one row, looping every 0.12 seconds.
     // Demo assets live at assets/demo/animated_sprite.png.
-    TigerEngine::Texture animationAtlas("assets/demo/animated_sprite.png");
-    TigerEngine::Material animationMaterial(TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), &animationAtlas);
-    auto *animatedObject = new TigerEngine::GameObject();
+    auto animationAtlas = assets.LoadTexture("assets/demo/animated_sprite.png");
+    auto animationMaterial = std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(1.0f), animationAtlas);
+    auto animatedObject = std::make_unique<TigerEngine::GameObject>();
     animatedObject->Position = {0.8f, 0.25f};
     animatedObject->Scale = {0.5f, 0.5f};
-    animatedObject->AddComponent<TigerEngine::SpriteRenderer>(&animationMaterial);
+    animatedObject->AddComponent<TigerEngine::SpriteRenderer>(animationMaterial);
     auto *animator = animatedObject->AddComponent<TigerEngine::SpriteAnimator>();
     animator->AddAnimation("Idle", TigerEngine::SpriteAnimator::Grid(4, 1, 0, 4, 0.12f));
     animator->Play("Idle");
-    app.GetScene().AddObject(animatedObject);
+    app.GetScene().AddObject(std::move(animatedObject));
 
     // Add to scene...
-    app.GetScene().AddObject(player);
-    app.GetScene().AddObject(floor);
+    app.GetScene().AddObject(std::move(player));
+    app.GetScene().AddObject(std::move(floor));
 
     try {
         std::cout << "Starting Engine Loop..." << std::endl;
@@ -131,4 +131,12 @@ int main() {
         std::cout << "\nUNKNOWN FATAL CRASH OCCURRED!\n" << std::endl;
     }
     return 0;
+}
+int main() {
+    try {
+        return RunDemo();
+    } catch (const std::exception& error) {
+        std::cerr << "Engine startup failed: " << error.what() << '\n';
+        return 1;
+    }
 }

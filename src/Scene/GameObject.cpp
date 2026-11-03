@@ -1,5 +1,7 @@
 #include "Scene/GameObject.h"
 #include "Graphics/Renderer2D.h"
+#include <algorithm>
+#include <stdexcept>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp> // <-- ADD THIS LINE
 #include <glm/gtc/type_ptr.hpp>
@@ -10,10 +12,11 @@ GameObject::GameObject()
 }
 
 GameObject::~GameObject() {
-    for(Component *comp : m_Components) {
-        delete comp;
+    if (Parent) {
+        auto& siblings = Parent->Children;
+        siblings.erase(std::remove(siblings.begin(), siblings.end(), this), siblings.end());
     }
-    m_Components.clear();
+    for (auto* child : Children) child->Parent = nullptr;
 }
 
 void GameObject::Start() {
@@ -22,19 +25,26 @@ void GameObject::Start() {
 
 void GameObject::Update(float deltaTime) {
     // Automatically update all attached components!
-    for(Component *comp : m_Components) {
+    for(const auto& comp : m_Components) {
         comp->Update(deltaTime);
     }
 }
 
 void GameObject::Draw() {
-    for(Component *comp : m_Components)
+    for(const auto& comp : m_Components)
         comp->Draw();
 }
 
 void GameObject::AddChild(GameObject *child) {
     if(!child)
         return;
+    for (auto* ancestor = this; ancestor; ancestor = ancestor->Parent)
+        if (ancestor == child) throw std::invalid_argument("Parenting would create a cycle");
+    if (child->Parent == this) return;
+    if (child->Parent) {
+        auto& siblings = child->Parent->Children;
+        siblings.erase(std::remove(siblings.begin(), siblings.end(), child), siblings.end());
+    }
     child->Parent = this;
     Children.push_back(child);
 }

@@ -11,13 +11,13 @@ enum class ShapeType {
 
 class SpriteRenderer : public Component {
   public:
-    Material *SharedMaterial; // NEW: Replaces Color and Sprite
+    std::shared_ptr<Material> SharedMaterial; // Retains shared material and texture.
     ShapeType Shape;
     int PolygonSides;
 
     // Constructor now just takes a Material and an optional shape
-    SpriteRenderer(Material *material, ShapeType shape = ShapeType::Quad)
-        : SharedMaterial(material), Shape(shape), PolygonSides(6) {
+    SpriteRenderer(std::shared_ptr<Material> material, ShapeType shape = ShapeType::Quad)
+        : SharedMaterial(std::move(material)), Shape(shape), PolygonSides(6) {
     }
 
     // UV range defaults to the full texture. Each SpriteRenderer owns its own UVs,

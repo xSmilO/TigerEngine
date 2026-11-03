@@ -3,6 +3,7 @@
 #include <glad/glad.h> // Or wherever your OpenGL headers are
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 namespace TigerEngine {
 
@@ -13,26 +14,28 @@ Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath) {
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
 
-    // 2. Compile Vertex Shader
-    unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
-    glCompileShader(vertex);
-    CheckCompileErrors(vertex, "VERTEX");
-
-    // 3. Compile Fragment Shader
-    unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
-    glCompileShader(fragment);
-    CheckCompileErrors(fragment, "FRAGMENT");
-
-    // 4. Link into a Shader Program
-    m_RendererID = glCreateProgram();
-    glAttachShader(m_RendererID, vertex);
-    glAttachShader(m_RendererID, fragment);
-    glLinkProgram(m_RendererID);
-    CheckCompileErrors(m_RendererID, "PROGRAM");
-
-    // 5. Cleanup individual shaders as they are now linked into the program
+    unsigned int vertex = 0, fragment = 0;
+    m_RendererID = 0;
+    try {
+        vertex = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertex, 1, &vShaderCode, nullptr);
+        glCompileShader(vertex);
+        CheckCompileErrors(vertex, "VERTEX: " + vertexPath);
+        fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragment, 1, &fShaderCode, nullptr);
+        glCompileShader(fragment);
+        CheckCompileErrors(fragment, "FRAGMENT: " + fragmentPath);
+        m_RendererID = glCreateProgram();
+        glAttachShader(m_RendererID, vertex);
+        glAttachShader(m_RendererID, fragment);
+        glLinkProgram(m_RendererID);
+        CheckCompileErrors(m_RendererID, "PROGRAM");
+    } catch (...) {
+        if (vertex) glDeleteShader(vertex);
+        if (fragment) glDeleteShader(fragment);
+        if (m_RendererID) glDeleteProgram(m_RendererID);
+        throw;
+    }
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 }
@@ -77,29 +80,22 @@ std::string Shader::ReadFile(const std::string &filepath) {
         stream << file.rdbuf();
         file.close();
     } catch(std::ifstream::failure &e) {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << filepath << std::endl;
+        throw std::runtime_error("Failed to read shader file: " + filepath);
     }
     return stream.str();
 }
 
 void Shader::CheckCompileErrors(unsigned int shader, const std::string &type) {
-    int success;
-    char infoLog[1024];
-    if(type != "PROGRAM") {
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if(!success) {
-            glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
-                      << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-        }
-    } else {
+    int success = GL_FALSE;
+    char infoLog[1024]{};
+    if (type == "PROGRAM") {
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
-        if(!success) {
-            glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
-                      << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-        }
+        if (!success) glGetProgramInfoLog(shader, sizeof(infoLog), nullptr, infoLog);
+    } else {
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) glGetShaderInfoLog(shader, sizeof(infoLog), nullptr, infoLog);
     }
+    if (!success) throw std::runtime_error("Shader " + type + " failed: " + infoLog);
 }
 
 } // namespace TigerEngine

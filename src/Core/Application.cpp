@@ -15,39 +15,70 @@ Application *Application::s_Instance = nullptr;
 
 Application::Application(int width, int height, const std::string &title)
     : m_Width(width), m_Height(height), m_Title(title), m_IsRunning(true) {
-    Init();
+    if (s_Instance) throw std::logic_error("Only one Application can be active");
+    if (width <= 0 || height <= 0)
+        throw std::invalid_argument("Application window dimensions must be positive");
     s_Instance = this;
+    try {
+        Init();
+    } catch (...) {
+        Shutdown();
+        throw;
+    }
 }
 
 Application::~Application() {
-    m_UIManager.Shutdown();
-    m_DemoFont.reset();
-    FontRenderer::Shutdown();
-    Renderer2D::Shutdown();
+    Shutdown();
+}
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
+void Application::Shutdown() {
+    m_IsRunning = false;
+    if (m_GLReady) {
+        glfwMakeContextCurrent(m_Window);
+        m_CurrentScene.Clear();
+        m_UIManager.Shutdown();
+        m_DemoFont.reset();
+        if (m_ImGuiGLReady) ImGui_ImplOpenGL3_Shutdown();
+        if (m_ImGuiGLFWReady) ImGui_ImplGlfw_Shutdown();
+        if (ImGui::GetCurrentContext()) ImGui::DestroyContext();
+        FontRenderer::Shutdown();
+        Renderer2D::Shutdown();
+    }
+    m_ImGuiGLReady = m_ImGuiGLFWReady = m_GLReady = false;
     AudioSystem::Shutdown();
-    glfwTerminate();
+    Input::Init(nullptr);
+    if (m_Window) {
+        glfwDestroyWindow(m_Window);
+        m_Window = nullptr;
+    }
+    if (m_GLFWInitialized) glfwTerminate();
+    m_GLFWInitialized = false;
+    if (s_Instance == this) s_Instance = nullptr;
 }
 
 void Application::Init() {
-    if(!glfwInit())
-        return;
+    glfwSetErrorCallback([](int code, const char* description) {
+        std::cerr << "GLFW error " << code << ": " << description << '\n';
+    });
+    if(!glfwInit()) throw std::runtime_error("Failed to initialize GLFW");
+    m_GLFWInitialized = true;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     m_Window = glfwCreateWindow(m_Width, m_Height, m_Title.c_str(), nullptr, nullptr);
-    if(!m_Window) {
-        glfwTerminate();
-        return;
-    }
+    if(!m_Window) throw std::runtime_error("Failed to create the OpenGL 3.3 window");
     glfwMakeContextCurrent(m_Window);
     glfwSwapInterval(m_VSync ? 1 : 0);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        throw std::runtime_error("Failed to load OpenGL functions");
+    m_GLReady = true;
+    int framebufferWidth, framebufferHeight;
+    glfwGetFramebufferSize(m_Window, &framebufferWidth, &framebufferHeight);
+    glViewport(0, 0, framebufferWidth, framebufferHeight);
+    m_CurrentScene.OnWindowResized(framebufferWidth, framebufferHeight);
 
     // Tell GLFW that the "User Pointer" for this window is our Application instance
     // This allows us to access m_CurrentScene from inside a static C-style callback function
@@ -79,9 +110,6 @@ void Application::Init() {
         }
     });
 
-    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        return;
-
     Renderer2D::Init();
     FontRenderer::Init();
     m_UIManager.Init();
@@ -96,8 +124,12 @@ void Application::Init() {
     (void)io;
     ImGui::StyleColorsDark();
 
-    ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    if (!ImGui_ImplGlfw_InitForOpenGL(m_Window, true))
+        throw std::runtime_error("Failed to initialize ImGui GLFW backend");
+    m_ImGuiGLFWReady = true;
+    if (!ImGui_ImplOpenGL3_Init("#version 330"))
+        throw std::runtime_error("Failed to initialize ImGui OpenGL backend");
+    m_ImGuiGLReady = true;
 
     Input::Init(m_Window);
 }
@@ -118,6 +150,8 @@ void Application::SetVSync(bool enabled) {
 }
 
 void Application::Run() {
+    if (!m_Window || !m_GLReady)
+        throw std::logic_error("Cannot run an uninitialized Application");
     double lastFrameTime = glfwGetTime();
 
     try {

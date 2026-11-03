@@ -7,30 +7,38 @@ Scene::Scene() {
 }
 
 Scene::~Scene() {
-    for(GameObject *obj : m_Objects)
-        delete obj;
+    Clear();
+}
+
+GameObject* Scene::AddObject(std::unique_ptr<GameObject> object) {
+    if (!object) return nullptr;
+    auto* borrowed = object.get();
+    object->CurrentScene = this;
+    m_Objects.push_back(std::move(object));
+    return borrowed;
+}
+
+void Scene::Clear() {
+    m_ActiveCamera = &m_DefaultCamera;
+    // Clear scene links before destructors run; objects detach hierarchy links.
+    for (const auto& obj : m_Objects) obj->CurrentScene = nullptr;
     m_Objects.clear();
 }
 
-void Scene::AddObject(GameObject *object) {
-    object->CurrentScene = this;
-    m_Objects.push_back(object);
-}
-
 void Scene::Start() {
-    for(GameObject *obj : m_Objects)
+    for(const auto& obj : m_Objects)
         obj->Start();
 }
 
 void Scene::Update(float deltaTime) {
-    for(GameObject *obj : m_Objects)
+    for(const auto& obj : m_Objects)
         obj->Update(deltaTime);
 }
 
 void Scene::Draw() {
     Renderer2D::BeginScene(*m_ActiveCamera);
 
-    for(GameObject *obj : m_Objects) {
+    for(const auto& obj : m_Objects) {
         obj->Draw();
     }
 
@@ -61,7 +69,7 @@ void Scene::OnWindowResized(int width, int height) {
 }
 
 void Scene::OnGUI() {
-    for(auto *obj : m_Objects) {
+    for(const auto& obj : m_Objects) {
         for(auto *comp : obj->GetComponents())
             comp->OnGUI();
     }

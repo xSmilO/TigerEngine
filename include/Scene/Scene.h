@@ -10,7 +10,13 @@ class Scene {
     Scene();
     ~Scene();
 
-    void AddObject(GameObject *object);
+    Scene(const Scene&) = delete;
+    Scene& operator=(const Scene&) = delete;
+
+    // Transfers ownership; returned pointer is borrowed until Clear/destruction.
+    GameObject* AddObject(std::unique_ptr<GameObject> object);
+    // Call outside Update/Draw. Releases owned objects and resets the camera.
+    void Clear();
 
     void Start();
     void Update(float deltaTime);
@@ -26,8 +32,11 @@ class Scene {
         return m_ActiveCamera;
     }
 
-    const std::vector<GameObject *> &GetObjects() const {
-        return m_Objects;
+    // Snapshot of borrowed pointers; callers must not delete scene objects.
+    std::vector<GameObject *> GetObjects() const {
+        std::vector<GameObject*> result;
+        for (const auto& obj : m_Objects) result.push_back(obj.get());
+        return result;
     }
 
     void OnWindowResized(int width, int height);
@@ -36,7 +45,7 @@ class Scene {
 
     std::vector<class BoxCollider2D *> GetAllColliders() {
         std::vector<BoxCollider2D *> colliders;
-        for(auto *obj : m_Objects) {
+        for(const auto& obj : m_Objects) {
             auto *col = obj->GetComponent<BoxCollider2D>();
             if(col)
                 colliders.push_back(col);
@@ -45,7 +54,7 @@ class Scene {
     }
 
   private:
-    std::vector<GameObject *> m_Objects;
+    std::vector<std::unique_ptr<GameObject>> m_Objects;
 
     OrthographicCamera m_DefaultCamera{-1.6f, 1.6f, -0.9f, 0.9f};
 

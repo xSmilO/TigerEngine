@@ -13,7 +13,7 @@ void SpriteRenderer::Draw() {
 
     if(Shape == ShapeType::Quad) {
         if(SharedMaterial->MainTexture) {
-            Renderer2D::DrawQuad(worldMatrix, SharedMaterial->MainTexture, SharedMaterial->TintColor, UVMin, UVMax);
+            Renderer2D::DrawQuad(worldMatrix, SharedMaterial->MainTexture.get(), SharedMaterial->TintColor, UVMin, UVMax);
         } else {
             Renderer2D::DrawQuad(worldMatrix, SharedMaterial->TintColor);
         }

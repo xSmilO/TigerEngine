@@ -2,6 +2,7 @@
 #include "UI/UIElement.h"
 #include "Graphics/Texture.h"
 #include <functional>
+#include <memory>
 #include <utility>
 namespace TigerEngine {
 enum class HorizontalAlignment { Left, Center, Right };
@@ -14,10 +15,10 @@ public:
     glm::vec4 HoverBackground{0.25f, 0.48f, 0.75f, 1.0f};
     glm::vec4 PressBackground{0.11f, 0.27f, 0.46f, 1.0f};
     glm::vec4 TextColor{1.0f};
-    // Non-owning texture pointers; the caller keeps textures alive.
-    const Texture* NormalTexture = nullptr;
-    const Texture* HoverTexture = nullptr;
-    const Texture* PressTexture = nullptr;
+    // Shared handles keep textures alive after cache eviction.
+    std::shared_ptr<const Texture> NormalTexture = nullptr;
+    std::shared_ptr<const Texture> HoverTexture = nullptr;
+    std::shared_ptr<const Texture> PressTexture = nullptr;
     glm::vec4 TextureTint{1.0f};
     // Source-image border sizes in pixels: left, right, top, bottom.
     // When enabled, corners stay fixed, edges stretch along one axis, center stretches both.
@@ -28,9 +29,9 @@ public:
         UseNineSlice = true;
     }
     void DisableNineSlice() { UseNineSlice = false; }
-    void SetTexture(const Texture* texture) { NormalTexture = texture; }
-    void SetTextures(const Texture* normal, const Texture* hover = nullptr,
-                     const Texture* pressed = nullptr) {
+    void SetTexture(std::shared_ptr<const Texture> texture) { NormalTexture = texture; }
+    void SetTextures(std::shared_ptr<const Texture> normal, std::shared_ptr<const Texture> hover = nullptr,
+                     std::shared_ptr<const Texture> pressed = nullptr) {
         NormalTexture = normal;
         HoverTexture = hover;
         PressTexture = pressed;

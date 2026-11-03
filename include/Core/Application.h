@@ -5,12 +5,14 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <memory>
+#include <stdexcept>
 #include "Graphics/FontRenderer.h"
 #include "UI/UIManager.h"
 
 namespace TigerEngine {
 class Application {
   public:
+    // Throws on initialization failure; only one Application may exist at a time.
     Application(int width, int height, const std::string &title);
     ~Application();
 
@@ -22,6 +24,7 @@ class Application {
     UIManager& GetUIManager() { return m_UIManager; }
 
     static Application &Get() {
+        if (!s_Instance) throw std::logic_error("No active Application");
         return *s_Instance;
     }
 
@@ -44,8 +47,13 @@ class Application {
     static Application *s_Instance;
 
     void Init();
+    void Shutdown();
 
-    GLFWwindow *m_Window;
+    GLFWwindow *m_Window = nullptr;
+    bool m_GLFWInitialized = false;
+    bool m_GLReady = false;
+    bool m_ImGuiGLFWReady = false;
+    bool m_ImGuiGLReady = false;
     int m_Width, m_Height;
     std::string m_Title;
     bool m_IsRunning;

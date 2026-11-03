@@ -97,7 +97,18 @@ void Renderer2D::Shutdown() {
     glDeleteVertexArrays(1, &s_VAO);
     glDeleteBuffers(1, &s_VBO);
     glDeleteBuffers(1, &s_EBO);
+    glDeleteVertexArrays(1, &s_TriangleVAO);
+    glDeleteBuffers(1, &s_TriangleVBO);
+    glDeleteVertexArrays(1, &s_PolygonVAO);
+    glDeleteBuffers(1, &s_PolygonVBO);
+    glDeleteVertexArrays(1, &s_LineVAO);
+    glDeleteBuffers(1, &s_LineVBO);
     delete s_Shader;
+    s_Shader = nullptr;
+    s_VAO = s_VBO = s_EBO = 0;
+    s_TriangleVAO = s_TriangleVBO = 0;
+    s_PolygonVAO = s_PolygonVBO = 0;
+    s_LineVAO = s_LineVBO = 0;
 }
 
 void Renderer2D::DrawQuad(const glm::mat4 &transform, const Vector4 &color) {
