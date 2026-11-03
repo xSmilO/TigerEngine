@@ -3,6 +3,22 @@
 @brief Application services and coordinate types.
 */
 /**
+@namespace TigerEngine::Key
+@ingroup core
+@brief Named keyboard codes matching GLFW, independent of GLFW headers.
+A-Z are letters; D0-D9 are the number row; KP0-KP9 are keypad digits.
+Function keys F1-F25, editing/navigation keys, punctuation and left/right
+modifiers are available. Unknown is a sentinel and polls as false.
+Use these with Input::IsKeyPressed; they represent held key state, not text input.
+*/
+/**
+@namespace TigerEngine::Mouse
+@ingroup core
+@brief Mouse button codes for Input::IsMouseButtonPressed.
+Button1-Button8 map to GLFW buttons. ButtonLeft, ButtonRight and ButtonMiddle
+alias Button1, Button2 and Button3 respectively.
+*/
+/**
 @defgroup scene Scene and behavior
 @brief Objects, components, animation and basic collision.
 */
