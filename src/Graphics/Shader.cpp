@@ -1,4 +1,5 @@
 #include "Graphics/Shader.h"
+#include "Core/AssetPath.h"
 #include <fstream>
 #include <glad/glad.h> // Or wherever your OpenGL headers are
 #include <iostream>
@@ -72,15 +73,16 @@ void Shader::SetFloat4(const std::string &name, float f1, float f2, float f3, fl
 }
 
 std::string Shader::ReadFile(const std::string &filepath) {
+    const auto resolved = AssetPath::Resolve(filepath).string();
     std::ifstream file;
     std::stringstream stream;
     file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try {
-        file.open(filepath);
+        file.open(resolved);
         stream << file.rdbuf();
         file.close();
     } catch(std::ifstream::failure &e) {
-        throw std::runtime_error("Failed to read shader file: " + filepath);
+        throw std::runtime_error("Failed to read shader file: " + resolved);
     }
     return stream.str();
 }

@@ -21,6 +21,7 @@ public:
     TextureHandle LoadTexture(const std::string& path);
     FontHandle LoadFont(const std::string& path, float pixelHeight = 32.0f);
 
+    // Load/unload use normalized absolute paths; relative aliases share cache entries.
     // Eviction only removes the cache's reference. Existing handles stay valid.
     bool UnloadTexture(const std::string& path);
     bool UnloadFont(const std::string& path, float pixelHeight = 32.0f);

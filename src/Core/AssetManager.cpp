@@ -1,4 +1,5 @@
 #include "Core/AssetManager.h"
+#include "Core/AssetPath.h"
 #include "Graphics/Texture.h"
 #include "Graphics/FontRenderer.h"
 #include <cmath>
@@ -8,13 +9,14 @@ namespace TigerEngine {
 
 AssetManager::TextureHandle AssetManager::LoadTexture(const std::string& path) {
     if (path.empty()) throw std::invalid_argument("Texture path must not be empty");
-    auto existing = m_Textures.find(path);
+    const auto key = AssetPath::Resolve(path).string();
+    auto existing = m_Textures.find(key);
     if (existing != m_Textures.end()) return existing->second;
 
-    auto texture = std::make_shared<Texture>(path);
+    auto texture = std::make_shared<Texture>(key);
     if (!texture->IsValid())
         throw std::runtime_error("Unable to load texture: " + path);
-    m_Textures.emplace(path, texture);
+    m_Textures.emplace(key, texture);
     return texture;
 }
 
@@ -23,22 +25,22 @@ AssetManager::FontHandle AssetManager::LoadFont(const std::string& path, float p
     if (!std::isfinite(pixelHeight) || pixelHeight <= 0.0f)
         throw std::invalid_argument("Font pixelHeight must be finite and positive");
 
-    FontKey key{path, pixelHeight};
+    FontKey key{AssetPath::Resolve(path).string(), pixelHeight};
     auto existing = m_Fonts.find(key);
     if (existing != m_Fonts.end()) return existing->second;
 
-    auto font = std::make_shared<Font>(path, pixelHeight);
+    auto font = std::make_shared<Font>(key.first, pixelHeight);
     if (!font->IsValid()) throw std::runtime_error("Unable to load font: " + path);
     m_Fonts.emplace(std::move(key), font);
     return font;
 }
 
 bool AssetManager::UnloadTexture(const std::string& path) {
-    return m_Textures.erase(path) != 0;
+    return m_Textures.erase(AssetPath::Resolve(path).string()) != 0;
 }
 
 bool AssetManager::UnloadFont(const std::string& path, float pixelHeight) {
-    return m_Fonts.erase(FontKey{path, pixelHeight}) != 0;
+    return m_Fonts.erase(FontKey{AssetPath::Resolve(path).string(), pixelHeight}) != 0;
 }
 
 void AssetManager::Clear() {

@@ -1,4 +1,5 @@
 #include "Core/AudioSystem.h"
+#include "Core/AssetPath.h"
 #include <iostream>
 
 // This macro tells miniaudio to actually write the implementation code here.
@@ -29,6 +30,8 @@ void AudioSystem::PlayMusic(const std::string &filepath, bool loop) {
     if(!s_Engine)
         return;
 
+    const auto resolved = AssetPath::Resolve(filepath).string();
+
     // If music is already playing, stop and destroy the old one first
     if(s_Music) {
         ma_sound_uninit((ma_sound *)s_Music);
@@ -41,14 +44,14 @@ void AudioSystem::PlayMusic(const std::string &filepath, bool loop) {
 
     // Initialize the sound from the file
     ma_result result =
-        ma_sound_init_from_file((ma_engine *)s_Engine, filepath.c_str(), 0, NULL, NULL, (ma_sound *)s_Music);
+        ma_sound_init_from_file((ma_engine *)s_Engine, resolved.c_str(), 0, NULL, NULL, (ma_sound *)s_Music);
 
     if(result == MA_SUCCESS) {
         // Tell miniaudio to loop it, then start playing!
         ma_sound_set_looping((ma_sound *)s_Music, loop ? MA_TRUE : MA_FALSE);
         ma_sound_start((ma_sound *)s_Music);
     } else {
-        std::cout << "Failed to load music: " << filepath << std::endl;
+        std::cout << "Failed to load music: " << resolved << " (error " << result << ")" << std::endl;
         delete(ma_sound *)s_Music;
         s_Music = nullptr;
     }
@@ -79,7 +82,10 @@ void AudioSystem::PlaySound2D(const std::string &filepath) {
         return;
 
     // ma_engine_play_sound handles loading and playing the file automatically
-    ma_engine_play_sound((ma_engine *)s_Engine, filepath.c_str(), NULL);
+    const auto resolved = AssetPath::Resolve(filepath).string();
+    const auto result = ma_engine_play_sound((ma_engine *)s_Engine, resolved.c_str(), NULL);
+    if (result != MA_SUCCESS)
+        std::cerr << "Failed to play sound: " << resolved << " (error " << result << ")\n";
 }
 
 void AudioSystem::SetGlobalVolume(float volume) {

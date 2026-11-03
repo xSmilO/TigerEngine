@@ -1,5 +1,6 @@
 #include "Core/Application.h"
 #include "Core/AssetManager.h"
+#include "Core/AssetPath.h"
 #include "Core/AudioSystem.h"
 #include "Core/Input.h"
 #include "Core/UI.h"
@@ -41,7 +42,7 @@ class PlayerController : public TigerEngine::Component {
 
             if(TigerEngine::Input::IsKeyPressed(GLFW_KEY_W)) {
                 Velocity.y = JumpForce;
-                TigerEngine::AudioSystem::PlaySound2D("assets/jump.wav");
+                TigerEngine::AudioSystem::PlaySound2D("assets/bomb.wav");
             }
         } else {
             Velocity.y += Gravity * deltaTime;
@@ -80,9 +81,16 @@ int RunDemo() {
     TigerEngine::AssetManager assets;
 
     auto playerTexture = assets.LoadTexture("assets/czadomen.jpg");
-    auto sameTexture = assets.LoadTexture("assets/czadomen.jpg");
+    auto sameTexture = assets.LoadTexture("./czadomen.jpg");
     std::cout << "Cached textures: " << assets.TextureCount() << "\n";
     std::cout << "Same resource ?" << (playerTexture == sameTexture) << "\n";
+
+    std::cout << "Asset root: " << TigerEngine::AssetPath::GetRoot() << '\n';
+    // Expected failure: the cache stays usable and the demo continues.
+    try { assets.LoadTexture("missing-demo-texture.png"); }
+    catch (const std::exception& error) {
+        std::cout << "Expected missing-asset check: " << error.what() << '\n';
+    }
 
     auto playerMaterial = std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(1.0f), playerTexture);
     auto player = std::make_unique<TigerEngine::GameObject>();

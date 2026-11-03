@@ -37,6 +37,7 @@ add_executable(${PROJECT_NAME}
     src/Core/AudioSystem.cpp
     src/Core/UI.cpp
     src/Core/AssetManager.cpp
+    src/Core/AssetPath.cpp
 
     src/UI/UIManager.cpp
     src/UI/UIElement.cpp
@@ -57,7 +58,6 @@ add_executable(${PROJECT_NAME}
     src/Scene/SpriteRenderer.cpp
     src/Scene/BoxCollider2D.cpp
     src/Scene/SpriteAnimator.cpp
-    src/Scene/SpriteRenderer.cpp
 
     vendor/imgui/imgui.cpp
     vendor/imgui/imgui_draw.cpp

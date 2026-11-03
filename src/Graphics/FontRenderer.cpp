@@ -1,4 +1,6 @@
 #include "Graphics/FontRenderer.h"
+#include "Core/AssetPath.h"
+#include <cmath>
 #include "Graphics/Shader.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,21 +18,22 @@ unsigned int FontRenderer::s_VBO = 0;
 Shader *FontRenderer::s_Shader = nullptr;
 
 Font::Font(const std::string &path, float pixelHeight) : m_PixelHeight(pixelHeight) {
-    if(pixelHeight <= 0.0f)
+    if(!std::isfinite(pixelHeight) || pixelHeight <= 0.0f)
         throw std::invalid_argument("Font pixel height must be positive");
-    std::ifstream stream(path, std::ios::binary);
+    const auto resolved = AssetPath::Resolve(path).string();
+    std::ifstream stream(resolved, std::ios::binary);
     if(!stream)
-        throw std::runtime_error("Unable to open font: " + path);
+        throw std::runtime_error("Unable to open font: " + resolved);
     std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(stream)), {});
     if(bytes.empty())
-        throw std::runtime_error("Font file is empty: " + path);
+        throw std::runtime_error("Font file is empty: " + resolved);
 
     std::vector<unsigned char> bitmap(AtlasSize * AtlasSize);
     std::array<stbtt_bakedchar, 95> baked{};
     int result = stbtt_BakeFontBitmap(bytes.data(), 0, pixelHeight, bitmap.data(), AtlasSize, AtlasSize, 32,
                                       static_cast<int>(baked.size()), baked.data());
     if(result <= 0)
-        throw std::runtime_error("Font glyph atlas did not fit: " + path);
+        throw std::runtime_error("Font glyph atlas did not fit: " + resolved);
     for(size_t i = 0; i < baked.size(); ++i) {
         const auto &b = baked[i];
         m_Glyphs[i] = {float(b.x0), float(b.y0), float(b.x1), float(b.y1), b.xoff, b.yoff, b.xadvance};
