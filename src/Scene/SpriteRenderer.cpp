@@ -18,7 +18,9 @@ void SpriteRenderer::Draw() {
             Renderer2D::DrawQuad(worldMatrix, SharedMaterial->TintColor);
         }
     } else if(Shape == ShapeType::Triangle) {
-        Renderer2D::DrawTriangle(Owner->Position, Owner->Scale, SharedMaterial->TintColor, Owner->Rotation);
+        Renderer2D::DrawTriangle(worldMatrix, SharedMaterial->TintColor);
+    } else if(Shape == ShapeType::Polygon) {
+        Renderer2D::DrawPolygon(worldMatrix, PolygonSides, SharedMaterial->TintColor);
     }
 }
 } // namespace TigerEngine

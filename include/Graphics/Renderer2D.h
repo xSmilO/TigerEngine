@@ -24,18 +24,22 @@ class Renderer2D {
     static void DrawQuad(const glm::mat4 &transform, const Texture *texture,
                          const Vector4 &tintColor, const Vector2 &uvMin, const Vector2 &uvMax);
 
+    // Matrix overloads use the same world transforms as sprites (including parents).
+    static void DrawTriangle(const glm::mat4 &transform, const Vector4 &color);
+    static void DrawPolygon(const glm::mat4 &transform, int sides, const Vector4 &color);
+
     static void DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &color, float rotation = 0.0f);
 
     static void DrawPolygon(const Vector2 &position, const Vector2 &size, int sides, const Vector4 &color,
                             float rotation = 0.0f);
 
-    // NEW: Draw a line between two points
+    // World-space endpoints, viewed through the current BeginScene camera.
     static void DrawLine(const Vector2 &p0, const Vector2 &p1, const Vector4 &color);
 
   private:
     static Shader *s_Shader;
 
-    static unsigned int s_VAO, s_VBO, s_ShaderProgram;
+    static unsigned int s_VAO, s_VBO;
     static unsigned int s_TriangleVAO, s_TriangleVBO;
     static unsigned int s_PolygonVAO, s_PolygonVBO;
     static unsigned int s_EBO; // <-- Add this line!

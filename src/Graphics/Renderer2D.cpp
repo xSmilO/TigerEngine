@@ -6,7 +6,7 @@
 
 namespace TigerEngine {
 
-unsigned int Renderer2D::s_VAO = 0, Renderer2D::s_VBO = 0, Renderer2D::s_ShaderProgram = 0;
+unsigned int Renderer2D::s_VAO = 0, Renderer2D::s_VBO = 0;
 
 unsigned int Renderer2D::s_TriangleVAO = 0, Renderer2D::s_TriangleVBO = 0;
 unsigned int Renderer2D::s_PolygonVAO = 0, Renderer2D::s_PolygonVBO = 0;
@@ -163,14 +163,18 @@ void Renderer2D::DrawQuad(const glm::mat4 &transform, const Texture *texture,
 }
 
 void Renderer2D::DrawTriangle(const Vector2 &position, const Vector2 &size, const Vector4 &tintColor, float rotation) {
-    s_Shader->Bind();
-
     glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
                           glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
                           glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
 
+    DrawTriangle(transform, tintColor);
+}
+
+void Renderer2D::DrawTriangle(const glm::mat4 &transform, const Vector4 &color) {
+    s_Shader->Bind();
     s_Shader->SetMat4("u_Transform", transform);
-    s_Shader->SetFloat4("u_Color", tintColor.r, tintColor.g, tintColor.b, tintColor.a);
+    s_Shader->SetFloat4("u_UVRect", 0.0f, 0.0f, 1.0f, 1.0f);
+    s_Shader->SetFloat4("u_Color", color.r, color.g, color.b, color.a);
     s_Shader->SetInt("u_HasTexture", 0);
 
     glBindVertexArray(s_TriangleVAO);
@@ -179,6 +183,13 @@ void Renderer2D::DrawTriangle(const Vector2 &position, const Vector2 &size, cons
 
 void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int sides, const Vector4 &color,
                              const float rotation) {
+    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
+                          glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
+                          glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
+    DrawPolygon(transform, sides, color);
+}
+
+void Renderer2D::DrawPolygon(const glm::mat4 &transform, int sides, const Vector4 &color) {
     if(sides < 3)
         sides = 3;
     if(sides > 98)
@@ -202,14 +213,11 @@ void Renderer2D::DrawPolygon(const Vector2 &position, const Vector2 &size, int s
     glBindBuffer(GL_ARRAY_BUFFER, s_PolygonVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
 
-    glUseProgram(s_ShaderProgram);
-    glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, 0.0f)) *
-                          glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)) *
-                          glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
-
-    glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(transform));
-    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
-    glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
+    s_Shader->Bind();
+    s_Shader->SetMat4("u_Transform", transform);
+    s_Shader->SetFloat4("u_UVRect", 0.0f, 0.0f, 1.0f, 1.0f);
+    s_Shader->SetFloat4("u_Color", color.r, color.g, color.b, color.a);
+    s_Shader->SetInt("u_HasTexture", 0);
 
     glBindVertexArray(s_PolygonVAO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, sides + 2);
@@ -221,11 +229,11 @@ void Renderer2D::DrawLine(const Vector2 &p0, const Vector2 &p1, const Vector4 &c
     glBindBuffer(GL_ARRAY_BUFFER, s_LineVBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(lineVertices), lineVertices);
 
-    glUseProgram(s_ShaderProgram);
-    glm::mat4 identity = glm::mat4(1.0f);
-    glUniformMatrix4fv(glGetUniformLocation(s_ShaderProgram, "u_Transform"), 1, GL_FALSE, glm::value_ptr(identity));
-    glUniform4f(glGetUniformLocation(s_ShaderProgram, "u_Color"), color.r, color.g, color.b, color.a);
-    glUniform1i(glGetUniformLocation(s_ShaderProgram, "u_HasTexture"), 0);
+    s_Shader->Bind();
+    s_Shader->SetMat4("u_Transform", glm::mat4(1.0f));
+    s_Shader->SetFloat4("u_UVRect", 0.0f, 0.0f, 1.0f, 1.0f);
+    s_Shader->SetFloat4("u_Color", color.r, color.g, color.b, color.a);
+    s_Shader->SetInt("u_HasTexture", 0);
 
     glBindVertexArray(s_LineVAO);
     glDrawArrays(GL_LINES, 0, 2);

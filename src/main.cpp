@@ -4,6 +4,7 @@
 #include "Core/Input.h"
 #include "Core/UI.h"
 #include "Graphics/Material.h"
+#include "Graphics/Renderer2D.h"
 #include "Graphics/OrthographicCamera.h"
 #include "Scene/BoxCollider2D.h"
 #include "Scene/Camera/SmoothCamera.h"
@@ -67,6 +68,13 @@ class PlayerController : public TigerEngine::Component {
     }
 };
 
+// Demonstration code belongs here, outside the Application loop.
+class ShapeGuide : public TigerEngine::Component {
+    void Draw() override {
+        TigerEngine::Renderer2D::DrawLine({0.15f, 0.45f}, {1.2f, 0.45f}, {0.2f, 0.9f, 1.0f, 1.0f});
+    }
+};
+
 int RunDemo() {
     TigerEngine::Application app(1280, 720, "TigerEngine");
     TigerEngine::AssetManager assets;
@@ -116,6 +124,23 @@ int RunDemo() {
     animator->AddAnimation("Idle", TigerEngine::SpriteAnimator::Grid(4, 1, 0, 4, 0.12f));
     animator->Play("Idle");
     app.GetScene().AddObject(std::move(animatedObject));
+
+    // Visible shape checks: red triangle, orange hexagon and cyan line.
+    auto triangle = std::make_unique<TigerEngine::GameObject>();
+    triangle->Position = {0.35f, 0.65f};
+    triangle->Scale = {0.3f, 0.3f};
+    triangle->AddComponent<TigerEngine::SpriteRenderer>(
+        std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(1.0f, 0.25f, 0.2f, 1.0f)),
+        TigerEngine::ShapeType::Triangle);
+    app.GetScene().AddObject(std::move(triangle));
+    auto polygon = std::make_unique<TigerEngine::GameObject>();
+    polygon->Position = {0.95f, 0.65f};
+    polygon->Scale = {0.3f, 0.3f};
+    polygon->AddComponent<TigerEngine::SpriteRenderer>(
+        std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(1.0f, 0.65f, 0.1f, 1.0f)),
+        TigerEngine::ShapeType::Polygon);
+    polygon->AddComponent<ShapeGuide>();
+    app.GetScene().AddObject(std::move(polygon));
 
     // Add to scene...
     app.GetScene().AddObject(std::move(player));
