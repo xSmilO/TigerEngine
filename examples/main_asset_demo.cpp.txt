@@ -1,0 +1,26 @@
+// Add to your existing main.cpp AFTER creating TigerEngine::Application app.
+// Include "Core/AssetManager.h" and "Graphics/FontRenderer.h".
+
+TigerEngine::AssetManager assets;
+
+// Cache deduplication: both handles refer to the same OpenGL texture.
+auto playerTexture = assets.LoadTexture("assets/czadomen.jpg");
+auto sameTexture = assets.LoadTexture("assets/czadomen.jpg");
+std::cout << "Cached textures: " << assets.TextureCount() << '\n'; // 1
+std::cout << "Same resource? " << (playerTexture == sameTexture) << '\n'; // 1
+
+// Existing Material uses a NON-owning Texture*: keep the shared_ptr alive
+// while the material and SpriteRenderer reference the texture.
+TigerEngine::Material playerMaterial({1, 1, 1, 1}, playerTexture.get());
+auto* player = new TigerEngine::GameObject();
+player->AddComponent<TigerEngine::SpriteRenderer>(&playerMaterial);
+app.GetScene().AddObject(player);
+
+// Fonts are also cached by path + pixel height.
+auto font32 = assets.LoadFont("assets/fonts/main.ttf", 32.0f);
+auto again = assets.LoadFont("assets/fonts/main.ttf", 32.0f);
+std::cout << "Cached fonts: " << assets.FontCount() << '\n'; // 1
+
+// Call app.Run() after finishing your scene/UI setup.
+// NOTE: Keep `assets`, `playerTexture`, `font32` and `playerMaterial`
+// alive until the game loop exits and the last user is done with them.

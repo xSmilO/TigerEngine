@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME}
     src/Core/Input.cpp
     src/Core/AudioSystem.cpp
     src/Core/UI.cpp
+    src/Core/AssetManager.cpp
 
     src/UI/UIManager.cpp
     src/UI/UIElement.cpp

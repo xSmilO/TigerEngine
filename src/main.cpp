@@ -1,4 +1,5 @@
 #include "Core/Application.h"
+#include "Core/AssetManager.h"
 #include "Core/AudioSystem.h"
 #include "Core/Input.h"
 #include "Core/UI.h"
@@ -7,8 +8,8 @@
 #include "Scene/BoxCollider2D.h"
 #include "Scene/Camera/SmoothCamera.h"
 #include "Scene/RigidBody2D.h"
-#include "Scene/SpriteRenderer.h"
 #include "Scene/SpriteAnimator.h"
+#include "Scene/SpriteRenderer.h"
 #include <iostream>
 
 class PlayerController : public TigerEngine::Component {
@@ -68,26 +69,32 @@ class PlayerController : public TigerEngine::Component {
 
 int main() {
     TigerEngine::Application app(1280, 720, "TigerEngine");
+    TigerEngine::AssetManager assets;
 
-    // 1. CREATE MATERIALS (Do this once)
-    TigerEngine::Texture *playerTex = new TigerEngine::Texture("assets/czadomen.jpg");
+    auto playerTexture = assets.LoadTexture("assets/czadomen.jpg");
+    auto sameTexture = assets.LoadTexture("assets/czadomen.jpg");
+    std::cout << "Cached textures: " << assets.TextureCount() << "\n";
+    std::cout << "Same resource ?" << (playerTexture == sameTexture) << "\n";
 
-    TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
-    TigerEngine::AudioSystem::SetMusicVolume(0.1);
-
-    TigerEngine::Material *matPlayer =
-        new TigerEngine::Material(TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), playerTex); // Cyan
-    TigerEngine::Material *matFloor = new TigerEngine::Material(TigerEngine::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-    // 2. CREATE PLAYER
-    TigerEngine::GameObject *player = new TigerEngine::GameObject();
+    TigerEngine::Material playerMaterial({1, 1, 1, 1}, playerTexture.get());
+    auto *player = new TigerEngine::GameObject();
+    player->AddComponent<TigerEngine::SpriteRenderer>(&playerMaterial);
     player->Scale = TigerEngine::Vector2(0.5f, 0.5f);
-    player->AddComponent<TigerEngine::SpriteRenderer>(matPlayer); // Pass the material!
     player->AddComponent<TigerEngine::RigidBody2D>();
     player->AddComponent<TigerEngine::BoxCollider2D>(TigerEngine::Vector2(0.6f, 0.9f),
                                                      TigerEngine::Vector2(0.0f, -0.05f));
     player->AddComponent<PlayerController>();
     player->AddComponent<TigerEngine::SmoothCamera>();
+
+    // Fonts are also cached by path + pixel height.
+    auto font32 = assets.LoadFont("assets/fonts/main.ttf", 32.0f);
+    auto again = assets.LoadFont("assets/fonts/main.ttf", 32.0f);
+    std::cout << "Cached fonts: " << assets.FontCount() << '\n'; // 1
+
+    TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
+    TigerEngine::AudioSystem::SetMusicVolume(0.1);
+
+    TigerEngine::Material *matFloor = new TigerEngine::Material(TigerEngine::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 
     // 3. CREATE FLOOR
     TigerEngine::GameObject *floor = new TigerEngine::GameObject();
@@ -100,13 +107,12 @@ int main() {
     // Sprite animation DEMO: 4 frames in one row, looping every 0.12 seconds.
     // Demo assets live at assets/demo/animated_sprite.png.
     TigerEngine::Texture animationAtlas("assets/demo/animated_sprite.png");
-    TigerEngine::Material animationMaterial(
-        TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), &animationAtlas);
-    auto* animatedObject = new TigerEngine::GameObject();
+    TigerEngine::Material animationMaterial(TigerEngine::Vector4(1.0f, 1.0f, 1.0f, 1.0f), &animationAtlas);
+    auto *animatedObject = new TigerEngine::GameObject();
     animatedObject->Position = {0.8f, 0.25f};
     animatedObject->Scale = {0.5f, 0.5f};
     animatedObject->AddComponent<TigerEngine::SpriteRenderer>(&animationMaterial);
-    auto* animator = animatedObject->AddComponent<TigerEngine::SpriteAnimator>();
+    auto *animator = animatedObject->AddComponent<TigerEngine::SpriteAnimator>();
     animator->AddAnimation("Idle", TigerEngine::SpriteAnimator::Grid(4, 1, 0, 4, 0.12f));
     animator->Play("Idle");
     app.GetScene().AddObject(animatedObject);
