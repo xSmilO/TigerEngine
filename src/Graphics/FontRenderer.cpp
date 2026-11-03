@@ -68,7 +68,7 @@ glm::vec2 Font::MeasureText(const std::string &text) const {
             continue;
         }
         if(c < 32 || c > 126)
-            c = '?'; // Matches DrawText's ASCII fallback.
+            c = '?';
         lineWidth += m_Glyphs[c - 32].xadvance;
     }
     maxWidth = std::max(maxWidth, lineWidth);
@@ -88,7 +88,7 @@ Font::TextBounds Font::MeasureVisibleBounds(const std::string &text) const {
             continue;
         }
         if(c < 32 || c > 126)
-            c = '?'; // Same fallback as DrawText.
+            c = '?';
         const auto &glyph = m_Glyphs[c - 32];
         const float w = glyph.x1 - glyph.x0;
         const float h = glyph.y1 - glyph.y0;
@@ -158,7 +158,6 @@ void FontRenderer::DrawText(const Font &font, const std::string &text, const glm
     glBindTexture(GL_TEXTURE_2D, font.m_Texture);
     glBindVertexArray(s_VAO);
 
-    // stb_truetype's baked coordinates use a baseline and a downward Y axis.
     float x = topLeft.x, y = topLeft.y + font.m_PixelHeight;
     for(unsigned char c : text) {
         if(c == '\n') {
@@ -167,7 +166,7 @@ void FontRenderer::DrawText(const Font &font, const std::string &text, const glm
             continue;
         }
         if(c < 32 || c > 126)
-            c = '?'; // ASCII-only initial implementation.
+            c = '?';
         const auto &b = font.m_Glyphs[c - 32];
         float x0 = x + b.xoff, y0 = y + b.yoff;
         float x1 = x0 + b.x1 - b.x0, y1 = y0 + b.y1 - b.y0;
@@ -183,4 +182,4 @@ void FontRenderer::DrawText(const Font &font, const std::string &text, const glm
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
-} // namespace TigerEngine
+}

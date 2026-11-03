@@ -80,15 +80,11 @@ void Application::Init() {
     glViewport(0, 0, framebufferWidth, framebufferHeight);
     m_CurrentScene.OnWindowResized(framebufferWidth, framebufferHeight);
 
-    // Tell GLFW that the "User Pointer" for this window is our Application instance
-    // This allows us to access m_CurrentScene from inside a static C-style callback function
     glfwSetWindowUserPointer(m_Window, this);
 
-    // Set the mouse button callback event
     glfwSetMouseButtonCallback(m_Window, [](GLFWwindow *window, int button, int action, int mods) {
         Application *app = (Application *)glfwGetWindowUserPointer(window);
 
-        // Get current mouse position for the event
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
@@ -100,10 +96,9 @@ void Application::Init() {
     });
 
     glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow *window, int width, int height) {
-        // 1. Tell OpenGL to scale the drawing canvas to the new window size
+
         glViewport(0, 0, width, height);
 
-        // 2. Tell our Scene to fix the camera's aspect ratio so shapes don't stretch
         Application *app = (Application *)glfwGetWindowUserPointer(window);
         if(app) {
             app->GetScene().OnWindowResized(width, height);
@@ -136,8 +131,7 @@ void Application::Init() {
 
 void Application::SetTargetFPS(int fps) {
     m_TargetFPS = fps > 0 ? fps : 0;
-    // Disable vsync when explicitly capping FPS so the requested limit is not
-    // constrained by the display's swap interval. Call SetVSync(true) to opt back in.
+
     if (m_TargetFPS > 0) SetVSync(false);
 }
 
@@ -192,9 +186,6 @@ void Application::Run() {
             glfwSwapBuffers(m_Window);
             glfwPollEvents();
 
-            // Limit completed frames, including CPU update + rendering + swap.
-            // Sleep until the current frame has consumed at least 1 / targetFPS.
-            // VSync may also impose a slower rate if explicitly re-enabled.
             if (m_TargetFPS > 0) {
                 const double frameSeconds = 1.0 / static_cast<double>(m_TargetFPS);
                 const double remaining = frameSeconds - (glfwGetTime() - currentFrameTime);
@@ -220,4 +211,4 @@ void Application::ImGuiEnd() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
-} // namespace TigerEngine
+}

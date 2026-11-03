@@ -8,7 +8,7 @@ namespace TigerEngine {
 
 void BoxCollider2D::Draw() {
     if(Application::Get().ShowHitboxes) {
-        // Now the compiler knows exactly what Owner is!
+
         float worldX = Owner->Position.x + Offset.x;
         float worldY = Owner->Position.y + Offset.y;
 
@@ -40,4 +40,4 @@ bool BoxCollider2D::CheckAABB(BoxCollider2D *other, Vector2 myNextPosition) {
     return (myRight > otherLeft && myLeft < otherRight && myTop > otherBottom && myBottom < otherTop);
 }
 
-} // namespace TigerEngine
+}

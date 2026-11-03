@@ -59,7 +59,7 @@ void SpriteAnimator::Update(float deltaTime) {
     if(it == m_Animations.end()) return;
     const auto& animation = it->second;
     m_Elapsed += deltaTime;
-    // Arithmetic skipping avoids O(deltaTime/frameDuration) loops after a pause.
+
     int advanced = static_cast<int>(m_Elapsed / animation.SecondsPerFrame);
     if(advanced <= 0) return;
     m_Elapsed -= advanced * animation.SecondsPerFrame;
@@ -80,4 +80,4 @@ void SpriteAnimator::ApplyFrame() {
     const auto& frame = it->second.Frames[m_Frame];
     sprite->SetUVRect(frame.UVMin, frame.UVMax);
 }
-} // namespace TigerEngine
+}

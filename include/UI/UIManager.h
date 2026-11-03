@@ -12,12 +12,12 @@ public:
     ~UIManager();
     UIManager(const UIManager&) = delete;
     UIManager& operator=(const UIManager&) = delete;
-    void Init(); // must be called with OpenGL context active
+    void Init();
     void Shutdown();
     UILabel* CreateLabel(const std::string& text, glm::vec2 pos);
     UIPanel* CreatePanel(glm::vec2 pos, glm::vec2 size);
     UIButton* CreateButton(const std::string& text, glm::vec2 pos, glm::vec2 size);
-    void SetFont(const Font* font) { m_Font = font; } // non-owning, font must outlive UI render
+    void SetFont(const Font* font) { m_Font = font; }
     void Update(float mouseX, float mouseY, bool leftDown, bool inputBlocked = false);
     void Draw() const;
     void SetViewportSize(glm::vec2 pixelSize) { m_ViewportSize = pixelSize; }
@@ -45,4 +45,4 @@ private:
     friend class UIButton;
     static UIManager* s_Current;
 };
-} // namespace TigerEngine
+}

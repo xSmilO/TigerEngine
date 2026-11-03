@@ -16,11 +16,11 @@ constexpr KeyCode Right = 262;
 constexpr KeyCode Left = 263;
 constexpr KeyCode Down = 264;
 constexpr KeyCode Up = 265;
-} // namespace Key
+}
 
 namespace Mouse {
 constexpr KeyCode ButtonLeft = 0;
 constexpr KeyCode ButtonRight = 1;
 constexpr KeyCode ButtonMiddle = 2;
-} // namespace Mouse
-} // namespace TigerEngine
+}
+}

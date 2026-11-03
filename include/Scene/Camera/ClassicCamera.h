@@ -10,4 +10,4 @@ class ClassicCamera : public TigerEngine::Component {
         }
     }
 };
-} // namespace TigerEngine
+}

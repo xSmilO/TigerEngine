@@ -1,0 +1,281 @@
+/**
+@defgroup core Core
+@brief Application services and coordinate types.
+*/
+/**
+@defgroup scene Scene and behavior
+@brief Objects, components, animation and basic collision.
+*/
+/**
+@defgroup graphics Graphics
+@brief Rendering, materials, textures, shaders and cameras.
+*/
+/**
+@defgroup ui User interface
+@brief Debug controls and screen-space game UI.
+*/
+
+/**
+@class TigerEngine::Application
+@ingroup core
+@brief Owns the window, engine systems, current scene and game UI.
+Construct before loading GPU resources. Only one instance may be active.
+Construction throws if window/graphics initialization fails. Run enters the
+frame loop; destruction releases scene/UI GPU resources before closing the window.
+TimeScale multiplies scene delta time. SetTargetFPS with a positive value disables
+VSync; SetVSync(true) can re-enable it. UI is still processed at TimeScale zero.
+@see TigerEngine::Scene, TigerEngine::UIManager
+*/
+/**
+@fn void TigerEngine::Application::Run()
+@brief Starts the scene and processes frames until close or Escape.
+Updates objects, draws the world and UI, presents the frame and polls events.
+Frame-loop exceptions are caught and logged by the current implementation.
+*/
+/**
+@class TigerEngine::Input
+@ingroup core
+@brief Polls keyboard/mouse state and converts cursor coordinates.
+Key/button queries return true while held. ImGui capture suppresses matching
+gameplay queries. Pixel positions use logical window pixels with top-left origin;
+NDC uses center origin and upward Y. World positions use the active camera matrix.
+No window means false/zero results. Minimized-window conversion returns zero.
+*/
+/**
+@fn TigerEngine::Point2D TigerEngine::Input::ScreenToWorld(Point2D point, Point2D windowSize, const OrthographicCamera& camera)
+@brief Converts logical window pixels to camera/world coordinates.
+@param point Cursor or other point in top-left-origin logical pixels.
+@param windowSize Logical window width/height, not framebuffer size.
+@param camera Camera whose view/projection defines the world.
+@return World point, or (0,0) for nonpositive/nonfinite dimensions.
+*/
+/**
+@typedef TigerEngine::Point2D
+@ingroup core
+@brief Floating-point x/y coordinates, implemented as glm::vec2.
+The API determines whether values are pixels, normalized coordinates or world units.
+Vector2 is an alias of the same type.
+*/
+/**
+@class TigerEngine::AssetPath
+@ingroup core
+@brief Resolves asset names against a configurable asset folder.
+The default root is assets beside the executable. Both image.png and
+assets/image.png address that root. Absolute paths are used directly. Resolve
+normalizes paths, including missing files, and rejects an empty path. SetRoot
+before Application construction or resource loading to use a different folder.
+*/
+/**
+@class TigerEngine::AssetManager
+@ingroup core
+@brief Caches shared textures and fonts by normalized absolute paths.
+LoadTexture and LoadFont require an active OpenGL context on the render thread.
+Fonts additionally use pixel height as a cache key. Load failures throw and are
+not cached. Unload/Clear remove only cache references; retained shared handles
+stay valid. A reload after eviction may allocate another copy of the resource.
+*/
+/**
+@class TigerEngine::AudioSystem
+@ingroup core
+@brief Plays sound effects and a single music stream through miniaudio.
+Application initializes and shuts down this system. Paths use AssetPath.
+PlaySound2D is fire-and-forget; PlayMusic replaces the previous music stream.
+Global volume affects the full mix; music volume affects that stream separately.
+Initialization/playback errors are logged. Audio is not cached by AssetManager.
+*/
+/**
+@class TigerEngine::Scene
+@ingroup scene
+@brief Owns objects and dispatches their lifecycle and rendering calls.
+AddObject transfers unique ownership. GetObjects returns a snapshot of borrowed
+pointers. The active camera pointer is borrowed and must remain valid and nonnull.
+Clear destroys objects and restores the default camera; call it outside iteration.
+Current mouse-event methods are empty; use Input polling for gameplay.
+Resize fits the view to the aspect ratio with vertical half-height 0.9, including
+when a custom active camera has been selected.
+*/
+/**
+@class TigerEngine::GameObject
+@ingroup scene
+@brief A named transform with owned components and borrowed hierarchy links.
+Position and Scale are local values; Rotation is in degrees. Default Scale is
+(0.5,0.5). AddComponent owns a component, sets Owner and immediately calls Start.
+GetComponent returns the first matching component, or nullptr. Returned pointers
+must not be deleted by callers. AddChild maintains hierarchy links and rejects
+cycles; it does not transfer ownership or preserve the previous world position.
+Both parent and child must still be owned by their scene/application setup.
+*/
+/**
+@class TigerEngine::Component
+@ingroup scene
+@brief Polymorphic base for behavior attached to a GameObject.
+Owner is borrowed. Override Update for logic, Draw for scene rendering and OnGUI
+for debug controls. Start runs immediately on attachment, so CurrentScene may
+still be null. Destruction is virtual. The default hooks do nothing.
+*/
+/**
+@class TigerEngine::SpriteRenderer
+@ingroup graphics
+@brief Draws a quad, triangle or regular polygon using its owner's world matrix.
+Retains a shared Material. Quads support texture/UV rectangles; other shapes use
+solid tint color. Each renderer has its own UVs, allowing independent animations
+with shared materials. PolygonSides defaults to six and drawing clamps it to 3-98.
+*/
+/**
+@class TigerEngine::Material
+@ingroup graphics
+@brief Shared RGBA appearance and optional shared texture.
+TintColor components use the 0-1 range. White preserves texture colors; a material
+without a texture draws a solid fill. Editing a shared material affects all its
+renderers. Material does not select a custom shader.
+*/
+/**
+@class TigerEngine::Renderer2D
+@ingroup graphics
+@brief Immediate OpenGL drawing for quads, triangles, polygons and lines.
+Application controls Init/Shutdown; Scene controls BeginScene/EndScene. Call draw
+functions from a component's Draw hook. Matrix overloads support parent transforms.
+Line endpoints are world coordinates. There is no draw batching or layer sorting.
+Use Graphics/Renderer2D.h; the old Scene/Renderer2D.h is not the active renderer API.
+*/
+/**
+@class TigerEngine::Texture
+@ingroup graphics
+@brief Owns an OpenGL RGBA image loaded by stb_image.
+Paths use AssetPath. Missing/invalid images throw. Loading uses nearest filtering.
+Construct and destroy while the context is alive; share AssetManager handles
+rather than copying Texture objects. Bind selects a texture unit for drawing.
+*/
+/**
+@class TigerEngine::Shader
+@ingroup graphics
+@brief Compiles/links a GLSL program and sets its uniforms.
+File/compile/link failures throw and partial allocations are released. Bind before
+setting uniforms. The program must be released while its OpenGL context exists.
+Application's renderers already manage their default shaders.
+*/
+/**
+@class TigerEngine::OrthographicCamera
+@ingroup graphics
+@brief Defines an orthographic view through bounds, position and matrices.
+Constructor/SetProjection bounds are left, right, bottom, top. Smaller bounds
+show a smaller world area. SetPosition moves the view; X points right, Y up.
+Scene resize currently overwrites custom projection bounds.
+*/
+/**
+@class TigerEngine::ClassicCamera
+@ingroup scene
+@brief Component that moves the application's active camera to the owner each update.
+*/
+/**
+@class TigerEngine::SmoothCamera
+@ingroup scene
+@brief Component that approaches the owner's position using FollowSpeed and delta time.
+*/
+/**
+@struct TigerEngine::SpriteFrame
+@ingroup scene
+@brief A normalized UV rectangle selecting an atlas frame.
+*/
+/**
+@struct TigerEngine::SpriteAnimation
+@ingroup scene
+@brief Frame rectangles with a positive frame duration and loop flag.
+*/
+/**
+@class TigerEngine::SpriteAnimator
+@ingroup scene
+@brief Advances atlas frames by changing the owner's SpriteRenderer UV rectangle.
+Attach SpriteRenderer first. Grid numbers frames from the top-left, row by row.
+Clips can loop or stop at the last frame. Stop freezes; Play(name,true) restarts.
+Play(name,false) with the same current name does not resume a stopped clip in the
+current implementation. GetFrameIndex is relative to the animation clip.
+*/
+/**
+@fn TigerEngine::SpriteAnimation TigerEngine::SpriteAnimator::Grid(int columns, int rows, int firstFrame, int frameCount, float secondsPerFrame, bool loop)
+@brief Builds animation rectangles for a regular atlas grid.
+@param columns Number of equal-width columns.
+@param rows Number of equal-height rows.
+@param firstFrame Zero-based start index from the top-left.
+@param frameCount Number of consecutive frames to include.
+@param secondsPerFrame Duration per frame in seconds.
+@param loop Whether playback wraps to the first frame.
+@return Animation definition ready for AddAnimation.
+*/
+/**
+@class TigerEngine::RigidBody2D
+@ingroup scene
+@brief Optional axis-separated movement with basic box collision resolution.
+Call Move explicitly from your controller; gravity is not automatic. The velocity
+argument is modified by reference when collision stops motion. Velocity is not
+integrated automatically, and HasCollision is currently not checked by Move.
+No fixed timestep, rotated-box support or parent-world collision transforms.
+OnCollisionEnter is dispatched during vertical overlap resolution and may repeat;
+it is not a tracked enter-only event.
+*/
+/**
+@class TigerEngine::BoxCollider2D
+@ingroup scene
+@brief Axis-aligned collision box using owner Position/Scale plus Size/Offset.
+Size multiplies scale; Offset adds to position. Rotation and parent transforms
+are not included. Draw shows a translucent box when Application::ShowHitboxes is true.
+*/
+/**
+@class TigerEngine::UI
+@ingroup ui
+@brief ImGui wrapper for debug windows, text, buttons, sliders and checkboxes.
+Call from Component::OnGUI and pair BeginWindow with EndWindow. Slider/checkbox
+pointers refer to values edited in place. Button returns true on activation.
+*/
+/**
+@class TigerEngine::UIManager
+@ingroup ui
+@brief Owns game UI elements and draws them in framebuffer pixels.
+Application initializes, updates, draws and shuts it down. Creation methods
+return borrowed pointers. SetFont borrows the pointer; keep the owning font handle
+alive while UI can draw. Labels do not intercept clicks; panels block UI behind
+them. Buttons click on release over the originally pressed button. This does not
+automatically consume gameplay Input polling. No child clipping/keyboard navigation.
+*/
+/**
+@class TigerEngine::UIElement
+@ingroup ui
+@brief Base for screen-space UI with position, size, visibility and anchors.
+Position is an offset from the chosen anchor within the parent or viewport.
+Y increases downwards. Parent is borrowed; UIManager owns all elements.
+SetParent rejects cycles. Hidden parents hide descendants.
+*/
+/**
+@class TigerEngine::UILabel
+@ingroup ui
+@brief Text and color drawn using the UI manager's font.
+*/
+/**
+@class TigerEngine::UIPanel
+@ingroup ui
+@brief Solid-color screen-space panel that can parent other UI elements.
+*/
+/**
+@class TigerEngine::UIButton
+@ingroup ui
+@brief Text button with color or texture states and optional nine-slice scaling.
+Texture handles are retained. SetTextures selects normal/hover/pressed artwork.
+Nine-slice borders are source pixels in left/right/top/bottom order. SetOnClick
+stores a callback; capture only objects that remain valid until the UI is cleared.
+*/
+/**
+@class TigerEngine::Font
+@ingroup graphics
+@brief Owns an ASCII glyph atlas baked from a TrueType font.
+Create with an active context. Pixel height defines rasterization size; fonts
+cannot be copied or moved. Unsupported bytes render as question marks; this is
+not full UTF-8/Polish text support. MeasureText returns nominal layout dimensions;
+MeasureVisibleBounds returns visible glyph bounds relative to drawing position.
+*/
+/**
+@class TigerEngine::FontRenderer
+@ingroup graphics
+@brief Draws text in top-left-origin framebuffer pixels.
+Application manages Init/Shutdown. DrawText requires a valid Font and active
+context. UI labels and buttons use this renderer internally.
+*/

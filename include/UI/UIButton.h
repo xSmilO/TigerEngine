@@ -15,13 +15,12 @@ public:
     glm::vec4 HoverBackground{0.25f, 0.48f, 0.75f, 1.0f};
     glm::vec4 PressBackground{0.11f, 0.27f, 0.46f, 1.0f};
     glm::vec4 TextColor{1.0f};
-    // Shared handles keep textures alive after cache eviction.
+
     std::shared_ptr<const Texture> NormalTexture = nullptr;
     std::shared_ptr<const Texture> HoverTexture = nullptr;
     std::shared_ptr<const Texture> PressTexture = nullptr;
     glm::vec4 TextureTint{1.0f};
-    // Source-image border sizes in pixels: left, right, top, bottom.
-    // When enabled, corners stay fixed, edges stretch along one axis, center stretches both.
+
     bool UseNineSlice = false;
     glm::vec4 NineSliceBorders{0.0f};
     void SetNineSlice(float left, float right, float top, float bottom) {
@@ -51,4 +50,4 @@ public:
     void SetOnClick(std::function<void()> callback) { OnClick = std::move(callback); }
     void Draw(const Font* font) const override;
 };
-} // namespace TigerEngine
+}

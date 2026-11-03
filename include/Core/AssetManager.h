@@ -11,8 +11,6 @@ namespace TigerEngine {
 class Texture;
 class Font;
 
-// A cache of shared GPU resources. Call its load methods only with an active
-// OpenGL context (i.e. after constructing Application), on the render thread.
 class AssetManager {
 public:
     using TextureHandle = std::shared_ptr<Texture>;
@@ -21,8 +19,6 @@ public:
     TextureHandle LoadTexture(const std::string& path);
     FontHandle LoadFont(const std::string& path, float pixelHeight = 32.0f);
 
-    // Load/unload use normalized absolute paths; relative aliases share cache entries.
-    // Eviction only removes the cache's reference. Existing handles stay valid.
     bool UnloadTexture(const std::string& path);
     bool UnloadFont(const std::string& path, float pixelHeight = 32.0f);
     void Clear();
@@ -35,4 +31,4 @@ private:
     std::unordered_map<std::string, TextureHandle> m_Textures;
     std::map<FontKey, FontHandle> m_Fonts;
 };
-} // namespace TigerEngine
+}

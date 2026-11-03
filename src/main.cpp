@@ -27,7 +27,6 @@ class PlayerController : public TigerEngine::Component {
         if(!rb)
             return;
 
-        // Horizontal Movement
         float moveX = 0.0f;
         if(TigerEngine::Input::IsKeyPressed(GLFW_KEY_D))
             moveX += 1.0f;
@@ -35,8 +34,7 @@ class PlayerController : public TigerEngine::Component {
             moveX -= 1.0f;
         Velocity.x = moveX * Speed;
 
-        // Jumping Logic with God Mode
-        if(rb->IsGrounded) { // <-- God mode lets us bypass the ground check!
+        if(rb->IsGrounded) {
             if(Velocity.y < 0.0f)
                 Velocity.y = 0.0f;
 
@@ -56,7 +54,6 @@ class PlayerController : public TigerEngine::Component {
 
         TigerEngine::UI::Checkbox("Show Hitboxes", &TigerEngine::Application::Get().ShowHitboxes);
 
-        // Grab the collider and make sliders for it!
         TigerEngine::BoxCollider2D *col = Owner->GetComponent<TigerEngine::BoxCollider2D>();
         if(col) {
             TigerEngine::UI::Text("Hitbox Settings");
@@ -69,14 +66,12 @@ class PlayerController : public TigerEngine::Component {
     }
 };
 
-// Demonstration code belongs here, outside the Application loop.
 class ShapeGuide : public TigerEngine::Component {
     void Draw() override {
         TigerEngine::Renderer2D::DrawLine({0.15f, 0.45f}, {1.2f, 0.45f}, {0.2f, 0.9f, 1.0f, 1.0f});
     }
 };
 
-// Hold left mouse to place the hexagon at a Point2D in world coordinates.
 class ShapeDemoControls : public TigerEngine::Component {
     void Update(float) override {
         using namespace TigerEngine;
@@ -144,7 +139,7 @@ int RunDemo() {
     std::cout << "Same resource ?" << (playerTexture == sameTexture) << "\n";
 
     std::cout << "Asset root: " << TigerEngine::AssetPath::GetRoot() << '\n';
-    // Expected failure: the cache stays usable and the demo continues.
+
     try { assets.LoadTexture("missing-demo-texture.png"); }
     catch (const std::exception& error) {
         std::cout << "Expected missing-asset check: " << error.what() << '\n';
@@ -160,26 +155,22 @@ int RunDemo() {
     player->AddComponent<PlayerController>();
     player->AddComponent<TigerEngine::SmoothCamera>();
 
-    // Fonts are also cached by path + pixel height.
     auto font32 = assets.LoadFont("assets/fonts/main.ttf", 32.0f);
     auto again = assets.LoadFont("assets/fonts/main.ttf", 32.0f);
-    std::cout << "Cached fonts: " << assets.FontCount() << '\n'; // 1
+    std::cout << "Cached fonts: " << assets.FontCount() << '\n';
 
     TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
     TigerEngine::AudioSystem::SetMusicVolume(0.1);
 
     auto matFloor = std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 
-    // 3. CREATE FLOOR
     auto floor = std::make_unique<TigerEngine::GameObject>();
     floor->Position = TigerEngine::Vector2(0.0f, -0.8f);
     floor->Scale = TigerEngine::Vector2(2.0f, 0.2f);
-    floor->AddComponent<TigerEngine::SpriteRenderer>(matFloor); // Pass the material!
+    floor->AddComponent<TigerEngine::SpriteRenderer>(matFloor);
     floor->AddComponent<TigerEngine::RigidBody2D>();
     floor->AddComponent<TigerEngine::BoxCollider2D>();
 
-    // Sprite animation DEMO: 4 frames in one row, looping every 0.12 seconds.
-    // Demo assets live at assets/demo/animated_sprite.png.
     auto animationAtlas = assets.LoadTexture("assets/demo/animated_sprite.png");
     auto animationMaterial = std::make_shared<TigerEngine::Material>(TigerEngine::Vector4(1.0f), animationAtlas);
     auto animatedObject = std::make_unique<TigerEngine::GameObject>();
@@ -192,7 +183,6 @@ int RunDemo() {
     animator->Play("Idle");
     app.GetScene().AddObject(std::move(animatedObject));
 
-    // Visible shape checks: red triangle, orange hexagon and cyan line.
     auto triangle = std::make_unique<TigerEngine::GameObject>();
     triangle->Position = {0.35f, 0.65f};
     triangle->Scale = {0.3f, 0.3f};
@@ -210,7 +200,6 @@ int RunDemo() {
     polygon->AddComponent<ShapeDemoControls>();
     app.GetScene().AddObject(std::move(polygon));
 
-    // Add to scene...
     app.GetScene().AddObject(std::move(player));
     app.GetScene().AddObject(std::move(floor));
 
@@ -218,7 +207,7 @@ int RunDemo() {
         std::cout << "Starting Engine Loop..." << std::endl;
         app.Run();
     } catch(const std::exception &e) {
-        // If C++ throws a fatal error, we catch it here and print it!
+
         std::cout << "\nFATAL ENGINE CRASH: " << e.what() << "\n" << std::endl;
     } catch(...) {
         std::cout << "\nUNKNOWN FATAL CRASH OCCURRED!\n" << std::endl;

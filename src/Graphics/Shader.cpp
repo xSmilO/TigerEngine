@@ -1,7 +1,7 @@
 #include "Graphics/Shader.h"
 #include "Core/AssetPath.h"
 #include <fstream>
-#include <glad/glad.h> // Or wherever your OpenGL headers are
+#include <glad/glad.h>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -9,7 +9,7 @@
 namespace TigerEngine {
 
 Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath) {
-    // 1. Read the files
+
     std::string vertexCode = ReadFile(vertexPath);
     std::string fragmentCode = ReadFile(fragmentPath);
     const char *vShaderCode = vertexCode.c_str();
@@ -100,4 +100,4 @@ void Shader::CheckCompileErrors(unsigned int shader, const std::string &type) {
     if (!success) throw std::runtime_error("Shader " + type + " failed: " + infoLog);
 }
 
-} // namespace TigerEngine
+}

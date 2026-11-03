@@ -21,8 +21,6 @@ void UIButton::Draw(const Font* font) const {
 
     if (!font || Text.empty()) return;
 
-    // DrawText positions glyphs relative to a nominal top-left / baseline.
-    // Center the actual glyph rectangle rather than the font's nominal height.
     const auto bounds = font->MeasureVisibleBounds(Text);
     const glm::vec2 textSize = bounds.Size();
     glm::vec2 targetTop = Position;
@@ -54,4 +52,4 @@ void UIButton::Draw(const Font* font) const {
     const glm::vec2 textPos = targetTop - bounds.Min;
     FontRenderer::DrawText(*font, Text, textPos, TextColor);
 }
-} // namespace TigerEngine
+}

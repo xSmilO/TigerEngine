@@ -15,9 +15,8 @@ class BoxCollider2D : public Component {
     BoxCollider2D(Vector2 size, Vector2 offset = Vector2(0.0f, 0.0f)) : Size(size), Offset(offset) {
     }
 
-    // Only DECLARE the functions here
     void Draw() override;
     bool CheckAABB(BoxCollider2D *other, Vector2 myNextPosition);
 };
 
-} // namespace TigerEngine
+}

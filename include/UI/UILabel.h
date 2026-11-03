@@ -7,4 +7,4 @@ public:
     glm::vec4 Color{1.0f};
     void Draw(const Font* font) const override;
 };
-} // namespace TigerEngine
+}

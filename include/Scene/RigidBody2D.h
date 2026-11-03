@@ -13,4 +13,4 @@ class RigidBody2D : public Component {
 
   private:
 };
-} // namespace TigerEngine
+}

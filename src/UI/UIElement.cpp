@@ -11,7 +11,7 @@ glm::vec2 UIElement::GetScreenPosition(glm::vec2 screenSize) const {
     case Anchor::BottomRight: origin = bounds; break;
     case Anchor::Center: origin = bounds * 0.5f; break;
     }
-    // Right/bottom/center align the element itself to the corresponding anchor.
+
     if (Alignment == Anchor::TopRight || Alignment == Anchor::BottomRight) origin.x -= Size.x;
     if (Alignment == Anchor::BottomLeft || Alignment == Anchor::BottomRight) origin.y -= Size.y;
     if (Alignment == Anchor::Center) origin -= Size * 0.5f;
@@ -27,4 +27,4 @@ bool UIElement::IsVisibleInHierarchy() const {
     for (auto* p = this; p; p = p->Parent) if (!p->Visible) return false;
     return true;
 }
-} // namespace TigerEngine
+}

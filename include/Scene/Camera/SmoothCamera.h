@@ -18,4 +18,4 @@ class SmoothCamera : public TigerEngine::Component {
         }
     }
 };
-} // namespace TigerEngine
+}

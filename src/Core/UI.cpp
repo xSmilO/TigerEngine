@@ -16,7 +16,7 @@ void UI::Text(const std::string &text) {
 }
 
 bool UI::Button(const std::string &label, const glm::vec2 &size) {
-    // We convert your engine's glm::vec2 into ImGui's ImVec2 behind the scenes!
+
     return ImGui::Button(label.c_str(), ImVec2(size.x, size.y));
 }
 
@@ -32,4 +32,4 @@ bool UI::Checkbox(const std::string &label, bool *value) {
     return ImGui::Checkbox(label.c_str(), value);
 }
 
-} // namespace TigerEngine
+}

@@ -23,4 +23,4 @@ void SpriteRenderer::Draw() {
         Renderer2D::DrawPolygon(worldMatrix, PolygonSides, SharedMaterial->TintColor);
     }
 }
-} // namespace TigerEngine
+}

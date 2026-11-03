@@ -20,16 +20,15 @@ void Renderer2D::Init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // 1. Setup Quad VAO/VBO/EBO
     glGenVertexArrays(1, &s_VAO);
     glBindVertexArray(s_VAO);
 
     float vertices[] = {
-        // Positions   // TexCoords
-        -0.5f, -0.5f, 0.0f, 0.0f, // Bottom Left
-        0.5f,  -0.5f, 1.0f, 0.0f, // Bottom Right
-        0.5f,  0.5f,  1.0f, 1.0f, // Top Right
-        -0.5f, 0.5f,  0.0f, 1.0f  // Top Left
+
+        -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f,  -0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f, 0.5f,  0.0f, 1.0f
     };
 
     glGenBuffers(1, &s_VBO);
@@ -49,14 +48,13 @@ void Renderer2D::Init() {
 
     glBindVertexArray(0);
 
-    // Set default shader
     s_Shader = new Shader("assets/shaders/default.vert", "assets/shaders/default.frag");
 
     float triangleVertices[] = {
-        // X, Y,       U, V
-        0.0f,  0.5f,  0.5f, 1.0f, // Top center
-        -0.5f, -0.5f, 0.0f, 0.0f, // Bottom left
-        0.5f,  -0.5f, 1.0f, 0.0f  // Bottom right
+
+        0.0f,  0.5f,  0.5f, 1.0f,
+        -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f,  -0.5f, 1.0f, 0.0f
     };
     glGenVertexArrays(1, &s_TriangleVAO);
     glGenBuffers(1, &s_TriangleVBO);
@@ -68,13 +66,11 @@ void Renderer2D::Init() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    // --- 2. SETUP DYNAMIC POLYGON ---
     glGenVertexArrays(1, &s_PolygonVAO);
     glGenBuffers(1, &s_PolygonVBO);
     glBindVertexArray(s_PolygonVAO);
     glBindBuffer(GL_ARRAY_BUFFER, s_PolygonVBO);
-    // We don't fill this with data yet, we just allocate enough empty memory (GL_DYNAMIC_DRAW)
-    // 4 floats per vertex, max 100 vertices = 400 floats
+
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 400, nullptr, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -85,7 +81,7 @@ void Renderer2D::Init() {
     glGenBuffers(1, &s_LineVBO);
     glBindVertexArray(s_LineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, s_LineVBO);
-    // Allocate space for 2 vertices (X, Y, U, V) = 8 floats total. GL_DYNAMIC_DRAW because lines change every frame.
+
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, nullptr, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
@@ -158,7 +154,7 @@ void Renderer2D::DrawQuad(const glm::mat4 &transform, const Texture *texture,
     }
     glBindVertexArray(s_VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    // Reset for older rendering paths that don't use the UV rectangle.
+
     s_Shader->SetFloat4("u_UVRect", 0.0f, 0.0f, 1.0f, 1.0f);
 }
 
@@ -197,17 +193,17 @@ void Renderer2D::DrawPolygon(const glm::mat4 &transform, int sides, const Vector
 
     std::vector<float> vertices;
     vertices.push_back(0.0f);
-    vertices.push_back(0.0f); // X, Y
+    vertices.push_back(0.0f);
     vertices.push_back(0.5f);
-    vertices.push_back(0.5f); // U, V
+    vertices.push_back(0.5f);
 
     float angleStep = (2.0f * 3.14159265f) / sides;
     for(int i = 0; i <= sides; i++) {
         float angle = i * angleStep;
-        vertices.push_back(cos(angle) * 0.5f);        // X
-        vertices.push_back(sin(angle) * 0.5f);        // Y
-        vertices.push_back(cos(angle) * 0.5f + 0.5f); // U
-        vertices.push_back(sin(angle) * 0.5f + 0.5f); // V
+        vertices.push_back(cos(angle) * 0.5f);
+        vertices.push_back(sin(angle) * 0.5f);
+        vertices.push_back(cos(angle) * 0.5f + 0.5f);
+        vertices.push_back(sin(angle) * 0.5f + 0.5f);
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, s_PolygonVBO);
@@ -245,7 +241,7 @@ void Renderer2D::BeginScene(const OrthographicCamera &camera) {
 }
 
 void Renderer2D::EndScene() {
-    // Ready for batch rendering later
+
 }
 
-} // namespace TigerEngine
+}

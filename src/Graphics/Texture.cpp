@@ -38,4 +38,4 @@ void Texture::Bind(unsigned int slot) const {
 void Texture::Unbind() const {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
-} // namespace TigerEngine
+}

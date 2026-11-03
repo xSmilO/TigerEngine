@@ -48,4 +48,4 @@ void AssetManager::Clear() {
     m_Textures.clear();
 }
 
-} // namespace TigerEngine
+}

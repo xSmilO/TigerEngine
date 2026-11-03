@@ -4,7 +4,7 @@
 namespace TigerEngine {
 class Texture {
   public:
-    // Throws on missing/invalid files; paths follow Core/AssetPath.h. Requires GL context.
+
     Texture(const std::string &path);
     ~Texture();
 
@@ -26,4 +26,4 @@ class Texture {
     unsigned int m_RendererID = 0;
     int m_Width = 0, m_Height = 0, m_BPP = 0;
 };
-} // namespace TigerEngine
+}

@@ -66,4 +66,4 @@ float Input::GetMouseX() { return GetMousePosition().x; }
 float Input::GetMouseY() { return GetMousePosition().y; }
 float Input::GetMouseX_NDC() { return GetMousePositionNDC().x; }
 float Input::GetMouseY_NDC() { return GetMousePositionNDC().y; }
-} // namespace TigerEngine
+}

@@ -12,7 +12,7 @@
 namespace TigerEngine {
 class Application {
   public:
-    // Throws on initialization failure; only one Application may exist at a time.
+
     Application(int width, int height, const std::string &title);
     ~Application();
 
@@ -31,15 +31,12 @@ class Application {
     float TimeScale = 1.0f;
     bool ShowHitboxes = false;
 
-    // 0 = unlimited. A positive value caps the main-loop frame rate.
     void SetTargetFPS(int fps);
     int GetTargetFPS() const { return m_TargetFPS; }
 
-    // Enables/disables swap-interval synchronization (typically monitor refresh).
     void SetVSync(bool enabled);
     bool IsVSyncEnabled() const { return m_VSync; }
 
-    // RGBA components in the range [0, 1].
     void SetClearColor(const Vector4& color) { m_ClearColor = color; }
     const Vector4& GetClearColor() const { return m_ClearColor; }
 
@@ -63,10 +60,10 @@ class Application {
 
     Scene m_CurrentScene;
     UIManager m_UIManager;
-    std::unique_ptr<Font> m_DemoFont; // Default font resource; UI elements are created in main.cpp.
+    std::unique_ptr<Font> m_DemoFont;
 
     void ImGuiBegin();
 
     void ImGuiEnd();
 };
-} // namespace TigerEngine
+}

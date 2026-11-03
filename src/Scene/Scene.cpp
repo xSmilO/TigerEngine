@@ -20,7 +20,7 @@ GameObject* Scene::AddObject(std::unique_ptr<GameObject> object) {
 
 void Scene::Clear() {
     m_ActiveCamera = &m_DefaultCamera;
-    // Clear scene links before destructors run; objects detach hierarchy links.
+
     for (const auto& obj : m_Objects) obj->CurrentScene = nullptr;
     m_Objects.clear();
 }
@@ -53,16 +53,14 @@ void Scene::OnMouseReleased(int button, float mouseX, float mouseY) {
 
 void Scene::OnWindowResized(int width, int height) {
     if(height == 0)
-        return; // Prevent division by zero if the window is minimized
+        return;
 
     float aspectRatio = (float)width / (float)height;
 
     float zoom = 0.9f;
 
-    // Update the fallback camera
     m_DefaultCamera.SetProjection(-aspectRatio * zoom, aspectRatio * zoom, -zoom, zoom);
 
-    // If the user plugged in a custom camera, update it too
     if(m_ActiveCamera && m_ActiveCamera != &m_DefaultCamera) {
         m_ActiveCamera->SetProjection(-aspectRatio * zoom, aspectRatio * zoom, -zoom, zoom);
     }
@@ -74,4 +72,4 @@ void Scene::OnGUI() {
             comp->OnGUI();
     }
 }
-} // namespace TigerEngine
+}

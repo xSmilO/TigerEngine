@@ -4,7 +4,7 @@
 namespace TigerEngine {
 class OrthographicCamera {
   public:
-    // left, right, bottom, top define the boundaries of what the camera can see
+
     OrthographicCamera(float left, float right, float bottom, float top);
 
     void SetPosition(const glm::vec3 &position);
@@ -34,4 +34,4 @@ class OrthographicCamera {
 
     glm::vec3 m_Position = {0.0f, 0.0f, 0.0f};
 };
-} // namespace TigerEngine
+}

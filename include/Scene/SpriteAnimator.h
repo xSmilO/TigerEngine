@@ -8,7 +8,6 @@
 namespace TigerEngine {
 class SpriteRenderer;
 
-// Each frame selects a rectangle in a texture atlas with normalized UVs.
 struct SpriteFrame {
     Vector2 UVMin{0.0f, 0.0f};
     Vector2 UVMax{1.0f, 1.0f};
@@ -22,7 +21,7 @@ struct SpriteAnimation {
 
 class SpriteAnimator : public Component {
   public:
-    // The image's first grid row is the TOP row, matching normal image editors.
+
     static SpriteAnimation Grid(int columns, int rows, int firstFrame,
                                 int frameCount, float secondsPerFrame,
                                 bool loop = true);
@@ -42,4 +41,4 @@ class SpriteAnimator : public Component {
     float m_Elapsed = 0.0f;
     bool m_Playing = false;
 };
-} // namespace TigerEngine
+}
