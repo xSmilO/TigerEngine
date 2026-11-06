@@ -53,6 +53,7 @@ void Application::Shutdown() {
     }
     if (m_GLFWInitialized) glfwTerminate();
     m_GLFWInitialized = false;
+    m_FramebufferSize = {0.0f, 0.0f};
     if (s_Instance == this) s_Instance = nullptr;
 }
 
@@ -77,8 +78,7 @@ void Application::Init() {
     m_GLReady = true;
     int framebufferWidth, framebufferHeight;
     glfwGetFramebufferSize(m_Window, &framebufferWidth, &framebufferHeight);
-    glViewport(0, 0, framebufferWidth, framebufferHeight);
-    m_CurrentScene.OnWindowResized(framebufferWidth, framebufferHeight);
+    UpdateFramebufferSize(framebufferWidth, framebufferHeight);
 
     glfwSetWindowUserPointer(m_Window, this);
 
@@ -96,12 +96,9 @@ void Application::Init() {
     });
 
     glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow *window, int width, int height) {
-
-        glViewport(0, 0, width, height);
-
         Application *app = (Application *)glfwGetWindowUserPointer(window);
         if(app) {
-            app->GetScene().OnWindowResized(width, height);
+            app->UpdateFramebufferSize(width, height);
         }
     });
 
@@ -127,6 +124,12 @@ void Application::Init() {
     m_ImGuiGLReady = true;
 
     Input::Init(m_Window);
+}
+
+void Application::UpdateFramebufferSize(int width, int height) {
+    m_FramebufferSize = {static_cast<float>(width), static_cast<float>(height)};
+    glViewport(0, 0, width, height);
+    if (width > 0 && height > 0) m_CurrentScene.OnWindowResized(width, height);
 }
 
 void Application::SetTargetFPS(int fps) {
@@ -170,12 +173,12 @@ void Application::Run() {
             ImGuiBegin();
             double mx = 0.0, my = 0.0;
             glfwGetCursorPos(m_Window, &mx, &my);
-            int ww = 1, wh = 1, fw = 1, fh = 1;
+            int ww = 1, wh = 1;
             glfwGetWindowSize(m_Window, &ww, &wh);
-            glfwGetFramebufferSize(m_Window, &fw, &fh);
-            m_UIManager.SetViewportSize({float(fw), float(fh)});
+            const auto framebufferSize = GetFramebufferSize();
+            m_UIManager.SetViewportSize(framebufferSize);
             if (ww > 0 && wh > 0) {
-                m_UIManager.Update(float(mx * fw / ww), float(my * fh / wh),
+                m_UIManager.Update(float(mx * framebufferSize.x / ww), float(my * framebufferSize.y / wh),
                     glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS,
                     ImGui::GetIO().WantCaptureMouse);
             }

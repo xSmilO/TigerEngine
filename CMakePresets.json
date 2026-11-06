@@ -1,0 +1,39 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "TigerEngine + Snake (MinGW)",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "all",
+      "displayName": "Silnik i demo",
+      "configurePreset": "default",
+      "targets": ["TigerEngine", "TigerSnake"],
+      "jobs": 4
+    },
+    {
+      "name": "engine",
+      "displayName": "Tylko silnik",
+      "configurePreset": "default",
+      "targets": ["TigerEngine"],
+      "jobs": 4
+    },
+    {
+      "name": "demo",
+      "displayName": "Tylko demo Snake",
+      "configurePreset": "default",
+      "targets": ["TigerSnake"],
+      "jobs": 4
+    }
+  ]
+}

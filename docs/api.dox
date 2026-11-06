@@ -49,6 +49,23 @@ Updates objects, draws the world and UI, presents the frame and polls events.
 Frame-loop exceptions are caught and logged by the current implementation.
 */
 /**
+@fn void TigerEngine::Application::Close()
+@brief Requests a normal exit from the application loop after the current frame.
+Window/context and engine resources are released by Application destruction.
+*/
+/**
+@fn TigerEngine::Point2D TigerEngine::Application::GetFramebufferSize() const
+@brief Returns the window drawing area's width/height in framebuffer pixels.
+Initialized during startup and updated by the framebuffer resize callback.
+These are not logical window coordinates; values can differ on high DPI displays.
+The value can be zero while minimized. Reading it does not query OpenGL.
+*/
+/**
+@fn float TigerEngine::Application::GetAspectRatio() const
+@brief Returns framebuffer width divided by height, or 1 when height is zero.
+Uses the same cached dimensions as GetFramebufferSize.
+*/
+/**
 @class TigerEngine::Input
 @ingroup core
 @brief Polls keyboard/mouse state and converts cursor coordinates.

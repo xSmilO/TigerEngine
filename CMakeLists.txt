@@ -15,9 +15,7 @@ add_subdirectory(vendor/glm EXCLUDE_FROM_ALL)
 
 find_package(OpenGL REQUIRED)
 
-add_executable(${PROJECT_NAME} 
-    src/main.cpp
-    
+add_library(TigerEngineCore STATIC
     src/Core/Application.cpp
     src/Core/Input.cpp
     src/Core/AudioSystem.cpp
@@ -54,18 +52,37 @@ add_executable(${PROJECT_NAME}
     vendor/imgui/backends/imgui_impl_opengl3.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(TigerEngineCore PUBLIC
     include
     vendor
     vendor/imgui
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(TigerEngineCore PUBLIC
     glfw
     glad
     glm::glm
     OpenGL::GL
 )
+
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE TigerEngineCore)
+
+add_custom_target(TigerAssets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/assets"
+    "${CMAKE_BINARY_DIR}/assets"
+)
+
+function(tiger_copy_assets target)
+    set_target_properties(${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_BINARY_DIR}>"
+    )
+    add_dependencies(${target} TigerAssets)
+endfunction()
+
+tiger_copy_assets(${PROJECT_NAME})
+add_subdirectory(demo)
 
 find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
@@ -76,9 +93,3 @@ if(DOXYGEN_FOUND)
         VERBATIM
     )
 endif()
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/assets"
-    "$<TARGET_FILE_DIR:TigerEngine>/assets"
-)

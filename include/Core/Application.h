@@ -17,6 +17,7 @@ class Application {
     ~Application();
 
     void Run();
+    void Close() { m_IsRunning = false; }
     Scene &GetScene() {
         return m_CurrentScene;
     }
@@ -37,6 +38,11 @@ class Application {
     void SetVSync(bool enabled);
     bool IsVSyncEnabled() const { return m_VSync; }
 
+    Point2D GetFramebufferSize() const { return m_FramebufferSize; }
+    float GetAspectRatio() const {
+        return m_FramebufferSize.y > 0.0f ? m_FramebufferSize.x / m_FramebufferSize.y : 1.0f;
+    }
+
     void SetClearColor(const Vector4& color) { m_ClearColor = color; }
     const Vector4& GetClearColor() const { return m_ClearColor; }
 
@@ -45,6 +51,7 @@ class Application {
 
     void Init();
     void Shutdown();
+    void UpdateFramebufferSize(int width, int height);
 
     GLFWwindow *m_Window = nullptr;
     bool m_GLFWInitialized = false;
@@ -52,6 +59,7 @@ class Application {
     bool m_ImGuiGLFWReady = false;
     bool m_ImGuiGLReady = false;
     int m_Width, m_Height;
+    Point2D m_FramebufferSize{0.0f};
     std::string m_Title;
     bool m_IsRunning;
     int m_TargetFPS = 0;
