@@ -85,6 +85,7 @@ void SnakeGame::SetState(State state) {
             break;
             case State::Lost:
             TigerEngine::AudioSystem::RestartMusic();
+            TigerEngine::AudioSystem::PauseMusic();
             break;
         }
     }
