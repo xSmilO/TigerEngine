@@ -54,6 +54,13 @@ class PlayerController : public TigerEngine::Component {
 
         TigerEngine::UI::Checkbox("Show Hitboxes", &TigerEngine::Application::Get().ShowHitboxes);
 
+        TigerEngine::UI::Separator();
+        TigerEngine::UI::Text(TigerEngine::AudioSystem::IsMusicPlaying() ? "Music: playing" : "Music: paused / stopped");
+        if (TigerEngine::UI::Button("Pause music")) TigerEngine::AudioSystem::PauseMusic();
+        if (TigerEngine::UI::Button("Resume music")) TigerEngine::AudioSystem::ResumeMusic();
+        if (TigerEngine::UI::Button("Restart music")) TigerEngine::AudioSystem::RestartMusic();
+        if (TigerEngine::UI::Button("Stop music")) TigerEngine::AudioSystem::StopMusic();
+
         TigerEngine::BoxCollider2D *col = Owner->GetComponent<TigerEngine::BoxCollider2D>();
         if(col) {
             TigerEngine::UI::Text("Hitbox Settings");

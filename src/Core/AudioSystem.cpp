@@ -52,10 +52,33 @@ void AudioSystem::PlayMusic(const std::string &filepath, bool loop) {
     }
 }
 
-void AudioSystem::StopMusic() {
+void AudioSystem::PauseMusic() {
     if(s_Music) {
         ma_sound_stop((ma_sound *)s_Music);
     }
+}
+
+void AudioSystem::ResumeMusic() {
+    if(s_Music) ma_sound_start((ma_sound *)s_Music);
+}
+
+void AudioSystem::RestartMusic() {
+    if(s_Music) {
+        ma_sound_stop((ma_sound *)s_Music);
+        ma_sound_seek_to_pcm_frame((ma_sound *)s_Music, 0);
+        ma_sound_start((ma_sound *)s_Music);
+    }
+}
+
+void AudioSystem::StopMusic() {
+    if(s_Music) {
+        ma_sound_stop((ma_sound *)s_Music);
+        ma_sound_seek_to_pcm_frame((ma_sound *)s_Music, 0);
+    }
+}
+
+bool AudioSystem::IsMusicPlaying() {
+    return s_Music && ma_sound_is_playing((ma_sound *)s_Music);
 }
 
 void AudioSystem::Shutdown() {

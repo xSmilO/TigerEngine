@@ -1,8 +1,13 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.21)
 project(TigerEngine VERSION 1.0 LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(TIGERENGINE_STANDALONE OFF)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(TIGERENGINE_STANDALONE ON)
+endif()
+option(TIGERENGINE_BUILD_SHOWCASE "Build the engine feature showcase" ${TIGERENGINE_STANDALONE})
+option(TIGERENGINE_BUILD_DEMO "Build the Snake demo" ${TIGERENGINE_STANDALONE})
+option(TIGERENGINE_BUILD_DOCS "Enable the Doxygen target" ${TIGERENGINE_STANDALONE})
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -57,6 +62,8 @@ target_include_directories(TigerEngineCore PUBLIC
     vendor
     vendor/imgui
 )
+add_library(TigerEngine::Core ALIAS TigerEngineCore)
+target_compile_features(TigerEngineCore PUBLIC cxx_std_17)
 
 target_link_libraries(TigerEngineCore PUBLIC
     glfw
@@ -65,31 +72,45 @@ target_link_libraries(TigerEngineCore PUBLIC
     OpenGL::GL
 )
 
-add_executable(${PROJECT_NAME} src/main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE TigerEngineCore)
-
-add_custom_target(TigerAssets
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/assets"
-    "${CMAKE_BINARY_DIR}/assets"
-)
-
 function(tiger_copy_assets target)
-    set_target_properties(${target} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_BINARY_DIR}>"
-    )
-    add_dependencies(${target} TigerAssets)
-endfunction()
-
-tiger_copy_assets(${PROJECT_NAME})
-add_subdirectory(demo)
-
-find_package(Doxygen QUIET)
-if(DOXYGEN_FOUND)
-    add_custom_target(docs
-        COMMAND "${DOXYGEN_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/Doxyfile"
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        COMMENT "Generating TigerEngine documentation"
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/assets"
+            "$<TARGET_FILE_DIR:${target}>/assets"
         VERBATIM
     )
+endfunction()
+
+if(TIGERENGINE_BUILD_SHOWCASE OR TIGERENGINE_BUILD_DEMO)
+    add_custom_target(TigerAssets
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+            "${CMAKE_CURRENT_BINARY_DIR}/assets"
+        VERBATIM
+    )
+endif()
+
+if(TIGERENGINE_BUILD_SHOWCASE)
+    add_executable(TigerEngine src/main.cpp)
+    target_link_libraries(TigerEngine PRIVATE TigerEngine::Core)
+    set_target_properties(TigerEngine PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_CURRENT_BINARY_DIR}>"
+    )
+    add_dependencies(TigerEngine TigerAssets)
+endif()
+
+if(TIGERENGINE_BUILD_DEMO)
+    add_subdirectory(demo)
+endif()
+
+if(TIGERENGINE_BUILD_DOCS)
+    find_package(Doxygen QUIET)
+    if(DOXYGEN_FOUND)
+        add_custom_target(docs
+            COMMAND "${DOXYGEN_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+            COMMENT "Generating TigerEngine documentation"
+            VERBATIM
+        )
+    endif()
 endif()
