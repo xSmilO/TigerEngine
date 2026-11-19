@@ -4,6 +4,7 @@
 #include "Graphics/Material.h"
 #include "Scene/SpriteAnimator.h"
 #include "Scene/SpriteRenderer.h"
+#include "Core/AudioSystem.h"
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -19,6 +20,7 @@ int main() {
         auto title = assets.LoadFont("fonts/main.ttf", 44.0f);
         auto small = assets.LoadFont("fonts/main.ttf", 18.0f);
         auto atlas = assets.LoadTexture("demo/animated_sprite.png");
+        AudioSystem::Init();
         auto head = std::make_unique<GameObject>();
         head->Name = "Snake head";
         head->AddComponent<SpriteRenderer>(std::make_shared<Material>(Vector4{1.0f}, atlas));

@@ -6,6 +6,7 @@
 #include "Scene/SpriteAnimator.h"
 #include "UI/UIButton.h"
 #include "UI/UIPanel.h"
+#include "Core/AudioSystem.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -57,6 +58,9 @@ SnakeGame::SnakeGame(Application& app, GameObject& head, std::shared_ptr<Font> f
     m_Menu->SetOnClick([this] { SetState(State::Menu); });
     m_Exit->SetOnClick([this] { m_App.Close(); });
     m_Pause->SetOnClick([this] { SetState(State::Paused); });
+
+    TigerEngine::AudioSystem::PlayMusic("assets/main_music.mp3", true);
+    TigerEngine::AudioSystem::SetMusicVolume(0.5f);
     SetState(State::Menu);
 }
 
@@ -71,8 +75,18 @@ void SnakeGame::SetState(State state) {
     m_Accumulator = 0.0f;
     auto* animator = m_Head.GetComponent<SpriteAnimator>();
     if (animator) {
-        if (state == State::Playing) animator->Play("Idle", true);
-        else animator->Stop();
+        switch(state) {
+            case State::Playing:
+            animator->Play("Idle", true);
+            TigerEngine::AudioSystem::ResumeMusic();
+            break;
+            case State::Paused:
+            TigerEngine::AudioSystem::PauseMusic();
+            break;
+            case State::Lost:
+            TigerEngine::AudioSystem::RestartMusic();
+            break;
+        }
     }
     UpdateInterface();
     UpdateHead();
